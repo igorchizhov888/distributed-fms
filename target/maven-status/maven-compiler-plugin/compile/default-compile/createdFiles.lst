@@ -1,0 +1,7 @@
+com/distributedFMS/core/config/GeographicAffinityFunction.class
+com/distributedFMS/core/model/AlarmSeverity.class
+com/distributedFMS/core/model/Alarm.class
+com/distributedFMS/DistributedFMSApplication.class
+com/distributedFMS/core/model/AlarmStatus.class
+com/distributedFMS/core/config/FMSIgniteConfig.class
+com/distributedFMS/core/processor/FMSEventProcessor.class

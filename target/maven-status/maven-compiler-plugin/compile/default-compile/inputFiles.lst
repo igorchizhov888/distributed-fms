@@ -1,0 +1,6 @@
+/home/gary/distributed-fms/src/main/java/com/distributedFMS/core/processor/FMSEventProcessor.java
+/home/gary/distributed-fms/src/main/java/com/distributedFMS/core/model/AlarmStatus.java
+/home/gary/distributed-fms/src/main/java/com/distributedFMS/core/model/Alarm.java
+/home/gary/distributed-fms/src/main/java/com/distributedFMS/core/model/AlarmSeverity.java
+/home/gary/distributed-fms/src/main/java/com/distributedFMS/DistributedFMSApplication.java
+/home/gary/distributed-fms/src/main/java/com/distributedFMS/core/config/FMSIgniteConfig.java

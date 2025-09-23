@@ -5,27 +5,122 @@
          http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
+    <!-- Project Information -->
     <groupId>com.distributedFMS</groupId>
     <artifactId>distributed-fms</artifactId>
     <version>0.1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
     
+    <name>Distributed Fault Management System</name>
+    <description>A geo-distributed fault management system for 5G networks using Apache Ignite</description>
+    
+    <!-- Java and Dependency Versions -->
     <properties>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <ignite.version>2.16.0</ignite.version>
+        <slf4j.version>1.7.36</slf4j.version>
+        <junit.version>4.13.2</junit.version>
     </properties>
     
     <dependencies>
+        <!-- Apache Ignite Core - Distributed computing platform -->
         <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-core</artifactId>
             <version>${ignite.version}</version>
         </dependency>
+        
+        <!-- Ignite Indexing - SQL queries and indexing support -->
         <dependency>
             <groupId>org.apache.ignite</groupId>
             <artifactId>ignite-indexing</artifactId>
             <version>${ignite.version}</version>
         </dependency>
+        
+        <!-- Ignite Spring Integration - Configuration and lifecycle management -->
+        <dependency>
+            <groupId>org.apache.ignite</groupId>
+            <artifactId>ignite-spring</artifactId>
+            <version>${ignite.version}</version>
+        </dependency>
+        
+        <!-- Logging Framework - Simple SLF4J implementation -->
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-simple</artifactId>
+            <version>${slf4j.version}</version>
+        </dependency>
+        
+        <!-- Testing Framework -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
+    
+    <build>
+        <plugins>
+            <!-- Java Compiler Plugin -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>17</source>
+                    <target>17</target>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+            
+            <!-- Maven Shade Plugin - Creates executable JAR with all dependencies -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <transformers>
+                                <!-- Set main class for executable JAR -->
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>com.distributedFMS.DistributedFMSApplication</mainClass>
+                                </transformer>
+                            </transformers>
+                            <!-- Avoid conflicts with signed JARs -->
+                            <filters>
+                                <filter>
+                                    <artifact>*:*</artifact>
+                                    <excludes>
+                                        <exclude>META-INF/*.SF</exclude>
+                                        <exclude>META-INF/*.DSA</exclude>
+                                        <exclude>META-INF/*.RSA</exclude>
+                                    </excludes>
+                                </filter>
+                            </filters>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            
+            <!-- Surefire Plugin - Unit test execution -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <includes>
+                        <include>**/*Test.java</include>
+                    </includes>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
