@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package com.distributedFMS;
+
+option java_multiple_files = true;
+option java_package = "com.distributedFMS.grpc";
+option java_outer_classname = "FMSProto";
+
+// The FMS service definition.
+service ManagementService {
+  // Submits an event to the FMS.
+  rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse) {}
+}
+
+// The request message containing the event details.
+message SubmitEventRequest {
+  string event_type = 1;
+  string device_id = 2;
+  int64 event_time = 3;
+  string description = 4;
+}
+
+// The response message containing the event ID.
+message SubmitEventResponse {
+  string event_id = 1;
+}

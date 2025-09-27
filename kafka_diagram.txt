@@ -1,0 +1,18 @@
+This diagram illustrates the role of Apache Kafka as the central messaging bus in the Distributed Fault Management System.
+
+```
++---------------------+      +---------------------+      +---------------------+ 
+|                     |      |                     |      |                     |
+|  Software Adapter   |----->|  Kafka (Topic)      |----->|  FMS Core Node      |
+| (e.g., SNMP)        |      |                     |      | (Consumer)          |
+| (Producer)          |      |                     |      |                     |
++---------------------+      +---------------------+      +---------------------+ 
+```
+
+**Explanation:**
+
+1.  **Software Adapters (Producers):** These components will receive fault events from various network sources (starting with SNMP), format them into a standard model, and then publish them to a Kafka topic.
+
+2.  **FMS Core Nodes (Consumers):** These components will subscribe to the Kafka topic to receive the fault events and then process them using the in-memory data grid and correlation logic.
+
+This asynchronous communication through Kafka decouples the event producers from the event consumers, which is a key aspect of the system's design.

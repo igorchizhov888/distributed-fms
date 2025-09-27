@@ -1,0 +1,19 @@
+This diagram represents the test case that was completed to verify the gRPC communication.
+
+```
++--------------------------------+      gRPC Call       +--------------------------------+
+|                                |--------------------->|                                |
+|  GrpcConnectionTest            |  (SubmitEvent)      |  ManagementServiceImpl         |
+|  (JUnit test - client)         |<---------------------|  (gRPC Server - in new thread) |
+|                                |   (SubmitResponse)  |                                |
++--------------------------------+                     +--------------------------------+
+```
+
+**Explanation:**
+
+1.  The `GrpcConnectionTest` class acted as the **gRPC client**.
+2.  It started the **gRPC server** (`ManagementServiceImpl`) in a separate thread.
+3.  The client then sent a `SubmitEvent` request to the server.
+4.  The server received the request, processed it, and sent back a `SubmitEventResponse`.
+
+This test confirmed that the basic gRPC communication is working as expected.
