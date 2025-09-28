@@ -23,6 +23,7 @@
         <slf4j.version>1.7.36</slf4j.version>
         <junit.version>4.13.2</junit.version>
         <grpc.version>1.64.0</grpc.version>
+        <kafka.version>3.7.0</kafka.version>
     </properties>
 
     <dependencies>
@@ -62,10 +63,17 @@
             <scope>test</scope>
         </dependency>
 
+        <!-- SNMP4J Dependency -->
+        <dependency>
+            <groupId>org.snmp4j</groupId>
+            <artifactId>snmp4j</artifactId>
+            <version>3.7.3</version>
+        </dependency>
+
         <!-- gRPC Dependencies -->
         <dependency>
             <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty-shaded</artifactId>
+            <artifactId>grpc-stub</artifactId>
             <version>${grpc.version}</version>
         </dependency>
         <dependency>
@@ -75,18 +83,28 @@
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
-            <artifactId>grpc-stub</artifactId>
+            <artifactId>grpc-netty-shaded</artifactId>
             <version>${grpc.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.google.protobuf</groupId>
-            <artifactId>protobuf-java-util</artifactId>
-            <version>3.25.3</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>javax.annotation</groupId>
             <artifactId>javax.annotation-api</artifactId>
             <version>1.3.2</version>
+        </dependency>
+
+        <!-- Kafka Client Dependency -->
+        <dependency>
+            <groupId>org.apache.kafka</groupId>
+            <artifactId>kafka-clients</artifactId>
+            <version>${kafka.version}</version>
+        </dependency>
+
+        <!-- JSON Serialization -->
+        <dependency>
+            <groupId>com.google.code.gson</groupId>
+            <artifactId>gson</artifactId>
+            <version>2.10.1</version>
         </dependency>
     </dependencies>
 
@@ -110,7 +128,7 @@
                     <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
-
+            
             <!-- Maven Shade Plugin - Creates executable JAR with all dependencies -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -145,7 +163,7 @@
                     </execution>
                 </executions>
             </plugin>
-
+            
             <!-- Surefire Plugin - Unit test execution -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -157,7 +175,7 @@
                     </includes>
                 </configuration>
             </plugin>
-
+            
             <!-- Protobuf Compiler Plugin -->
             <plugin>
                 <groupId>org.xolstice.maven.plugins</groupId>
@@ -174,6 +192,28 @@
                             <goal>compile</goal>
                             <goal>compile-custom</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!-- Build Helper Plugin - Adds generated sources to the build path -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>build-helper-maven-plugin</artifactId>
+                <version>3.2.0</version>
+                <executions>
+                    <execution>
+                        <id>add-source</id>
+                        <phase>generate-sources</phase>
+                        <goals>
+                            <goal>add-source</goal>
+                        </goals>
+                        <configuration>
+                            <sources>
+                                <source>${project.build.directory}/generated-sources/protobuf/java</source>
+                                <source>${project.build.directory}/generated-sources/protobuf/grpc-java</source>
+                            </sources>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
