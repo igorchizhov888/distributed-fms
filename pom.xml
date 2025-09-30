@@ -170,10 +170,29 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.0.0</version>
                 <configuration>
+                    <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
                     <includes>
                         <include>**/*Test.java</include>
                     </includes>
                 </configuration>
+            </plugin>
+
+            <!-- Failsafe Plugin - Integration test execution -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-failsafe-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>integration-test</goal>
+                            <goal>verify</goal>
+                        </goals>
+                    </execution>
+                </executions>
             </plugin>
             
             <!-- Protobuf Compiler Plugin -->
@@ -194,6 +213,17 @@
                         </goals>
                     </execution>
                 </executions>
+            </plugin>
+
+            <!-- Exec Maven Plugin - Runs the application -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <configuration>
+                    <mainClass>com.distributedFMS.DistributedFMSApplication</mainClass>
+                    <argLine>--add-opens=java.base/java.nio=ALL-UNNAMED</argLine>
+                </configuration>
             </plugin>
 
             <!-- Build Helper Plugin - Adds generated sources to the build path -->

@@ -3,6 +3,7 @@ package com.distributedFMS.core;
 import com.distributedFMS.grpc.ManagementServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
+import org.apache.ignite.Ignite;
 
 import java.io.IOException;
 import java.util.logging.Logger;
@@ -11,9 +12,14 @@ public class FmsCoreServer {
 
     private static final Logger logger = Logger.getLogger(FmsCoreServer.class.getName());
 
+    private final Ignite ignite;
     private Server grpcServer;
     private EventConsumer kafkaConsumer;
     private Thread consumerThread;
+
+    public FmsCoreServer(Ignite ignite) {
+        this.ignite = ignite;
+    }
 
     public void start() throws IOException {
         // Start gRPC Server
@@ -25,7 +31,7 @@ public class FmsCoreServer {
         logger.info("gRPC Server started, listening on " + port);
 
         // Start Kafka Consumer
-        kafkaConsumer = new EventConsumer();
+        kafkaConsumer = new EventConsumer(ignite);
         consumerThread = new Thread(kafkaConsumer);
         consumerThread.start();
 
