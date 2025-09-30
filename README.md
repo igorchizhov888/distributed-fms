@@ -1,82 +1,67 @@
 # Distributed Fault Management System
 
-A geo-distributed, high-performance fault management system for telecommunications networks, built on Apache Ignite.
+A geo-distributed, high-performance fault management system for telecommunications networks, built on Apache Ignite and Apache Kafka.
 
 ## Problem Statement
 
-Traditional centralized fault management systems cannot handle modern network event volumes and geographic distribution requirements. This project implements distributed, edge-based fault management using in-memory data grids.
+Traditional centralized fault management systems cannot handle modern network event volumes and geographic distribution requirements. This project implements distributed, edge-based fault management using in-memory data grids and a message bus for event ingestion.
 
 ## Key Features
 
-- **Geographic Distribution**: Process events at network edge locations using custom affinity functions
-- **Real-time Processing**: Handle thousands of events per second per node with sub-millisecond response times
-- **Active-Active Clustering**: Automatic failover with zero data loss across distributed nodes
-- **SQL Querying**: Complex alarm correlation across distributed datasets
-- **Universal Network Support**: Monitor any network type by adding appropriate software adapters
+- **Event-Driven Architecture**: Ingests events via an Apache Kafka message bus.
+- **Geographic Distribution**: Process events at network edge locations using custom affinity functions in Apache Ignite.
+- **Real-time Processing**: Handle thousands of events per second per node with sub-millisecond response times.
+- **Distributed Caching**: Events are consumed and stored in a distributed Apache Ignite cache.
+- **Active-Active Clustering**: Automatic failover with zero data loss across distributed nodes (feature of Ignite).
+- **Universal Network Support**: Monitor any network type by adding appropriate software adapters.
 
 ## Quick Start
 
 ### Prerequisites
 - Java 17+
 - Maven 3.6+
+- Docker and Docker Compose
 
-### Build the Project
+### 1. Build the Project
+
+First, build the application using Maven. This will compile the code and create a single executable JAR file with all dependencies.
+
 ```bash
-mvn package
+mvn clean install
 ```
 
-### Run the Application
+### 2. Start the Kafka Environment
 
-To start a server node, use the `start-server.sh` script:
+The system depends on Apache Kafka and Zookeeper. A Docker Compose file is provided to easily start these services.
+
 ```bash
-./start-server.sh <node-name>
+docker compose up -d
 ```
-For example:
+This will start the containers in the background.
+
+### 3. Run the FMS Core Server
+
+Run the main FMS application using the provided `run.sh` script. This script includes necessary JVM arguments for compatibility with Java 17+.
+
 ```bash
-./start-server.sh node-1
+./run.sh
 ```
+The server will start, connect to the Kafka bus, and begin listening for events. Log output is directed to `server.log`.
 
-To start a client node, use the `start-client.sh` script:
+### 4. Send Test Events
+
+In a separate terminal, run the `SnmpEventProducer`. This is a simulator that sends sample events to the `fms-events` Kafka topic.
+
 ```bash
-./start-client.sh <node-name>
+./run.sh com.distributedFMS.simulation.SnmpEventProducer
 ```
-For example:
-```bash
-./start-client.sh client-1
+
+### 5. Verify Operation
+
+Check the logs of the FMS Core Server (`server.log`). You should see messages indicating that events were consumed from Kafka and stored in the Ignite cache:
+
 ```
-The scripts handle the complex JVM arguments required to run the application.
-
-## High Availability and Failover
-
-The Distributed FMS is designed for high availability. You can test the failover mechanism by following these steps:
-
-1.  **Start two server nodes:**
-    Open two separate terminals and run the following commands, one in each terminal:
-    ```bash
-    # In terminal 1
-    ./start-server.sh node-1
-    ```
-    ```bash
-    # In terminal 2
-    ./start-server.sh node-2
-    ```
-
-2.  **Start a client:**
-    Open a third terminal and start the client:
-    ```bash
-    ./start-client.sh client-1
-    ```
-
-3.  **Verify the cluster:**
-    In the logs of any of the three nodes, you should see a topology snapshot indicating a cluster of 2 servers and 1 client:
-    `Topology snapshot [..., servers=2, clients=1, ...]`
-
-4.  **Simulate a failover:**
-    Stop one of the server nodes by closing its terminal window or pressing `Ctrl+C`.
-
-5.  **Verify the failover:**
-    Check the logs of the remaining server and the client. You should see a new topology snapshot indicating that one server has left, but the client is still connected:
-    `Topology snapshot [..., servers=1, clients=1, ...]`
-    You can also verify that the 'Total Alarms' count in the client's log remains the same, which proves that no data was lost.
-
-This demonstrates the system's ability to handle node failures without interrupting the client.
+INFO: Consumed event from partition 0 with offset 0: ...
+INFO: Put event for device '...' into cache 'fms-events-cache'
+```
+This confirms the end-to-end data pipeline is working correctly.
