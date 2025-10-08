@@ -20,7 +20,7 @@ public class Alarm implements Serializable {
     private String sourceDevice;
     
     @QuerySqlField(index = true)
-    private AlarmSeverity severity;
+    private AlarmPriority priority;
     
     @QuerySqlField
     private String eventType;
@@ -53,11 +53,11 @@ public class Alarm implements Serializable {
         this.status = AlarmStatus.ACTIVE;
     }
     
-    public Alarm(String sourceDevice, AlarmSeverity severity, String eventType, 
+    public Alarm(String sourceDevice, AlarmPriority priority, String eventType, 
                  String description, String geographicRegion) {
         this();
         this.sourceDevice = sourceDevice;
-        this.severity = severity;
+        this.priority = priority;
         this.eventType = eventType;
         this.description = description;
         this.geographicRegion = geographicRegion;
@@ -72,8 +72,8 @@ public class Alarm implements Serializable {
     public String getSourceDevice() { return sourceDevice; }
     public void setSourceDevice(String sourceDevice) { this.sourceDevice = sourceDevice; }
     
-    public AlarmSeverity getSeverity() { return severity; }
-    public void setSeverity(AlarmSeverity severity) { this.severity = severity; }
+    public AlarmPriority getPriority() { return priority; }
+    public void setPriority(AlarmPriority priority) { this.priority = priority; }
     
     public String getEventType() { return eventType; }
     public void setEventType(String eventType) { this.eventType = eventType; }
@@ -114,8 +114,8 @@ public class Alarm implements Serializable {
     
     @Override
     public String toString() {
-        return String.format("Alarm{id='%s', source='%s', severity=%s, type='%s', region='%s', status=%s}", 
-                           alarmId, sourceDevice, severity, eventType, geographicRegion, status);
+        return String.format("Alarm{id='%s', source='%s', priority=%s, type='%s', region='%s', status=%s}", 
+                           alarmId, sourceDevice, priority, eventType, geographicRegion, status);
     }
 }
 

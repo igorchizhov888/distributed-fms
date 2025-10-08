@@ -3,7 +3,8 @@ package com.distributedFMS.core;
 import com.distributedFMS.core.config.FMSIgniteConfig;
 import com.distributedFMS.core.correlation.DeduplicationCorrelator;
 import com.distributedFMS.core.model.Alarm;
-import com.distributedFMS.core.model.AlarmSeverity;
+import com.distributedFMS.core.model.AlarmPriority;
+import com.distributedFMS.core.priority.AlarmPrioritizationEngine;
 import org.apache.ignite.configuration.CacheConfiguration;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -72,14 +73,18 @@ public class EventConsumer implements Runnable {
                         continue;
                     }
 
+                    AlarmPriority priority = AlarmPrioritizationEngine.getPriority(jsonObject.get("eventType").getAsString());
+
                     // Create an Alarm from the event
                     Alarm alarm = new Alarm(
                             sourceIp,
-                            AlarmSeverity.INFO, // Default severity
+                            priority, // Default severity
                             jsonObject.get("eventType").getAsString(),
                             jsonObject.get("description").getAsString(),
                             "UNKNOWN" // Default region
                     );
+
+                    logger.info("Created alarm: " + alarm.toString());
 
                     // Process the alarm through the deduplication correlator
                     deduplicationCorrelator.deduplicate(alarm);
