@@ -7,6 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+- **Event Deduplication:** Implemented and verified end-to-end event deduplication logic. The `DeduplicationCorrelator` now correctly identifies duplicate events based on a correlation key and updates a tally count in the `Alarm` object, rather than creating new alarms for each duplicate event.
+
 ## [0.1.0] - 2025-09-30
 
 ### Added
