@@ -21,6 +21,7 @@ Traditional centralized fault management systems cannot handle modern network ev
 - Java 17+
 - Maven 3.6+
 - Docker and Docker Compose
+- `snmptrap` command-line tool
 
 ### 1. Build the Project
 
@@ -39,29 +40,38 @@ docker compose up -d
 ```
 This will start the containers in the background.
 
-### 3. Run the FMS Core Server
+### 3. Start the FMS Server and Trap Receiver
 
-Run the main FMS application using the provided `run.sh` script. This script includes necessary JVM arguments for compatibility with Java 17+.
+Run the FMS server and the SNMP trap receiver in the background using the provided scripts:
 
 ```bash
-./run.sh
+./run-app.sh server &
+./start-trap-receiver.sh &
 ```
-The server will start, connect to the Kafka bus, and begin listening for events. Log output is directed to `server.log`.
+
+The server will start, connect to the Kafka bus, and begin listening for events. Log output is directed to `server.log` and `trap.log`.
 
 ### 4. Send Test Events
 
-In a separate terminal, run the `SnmpEventProducer`. This is a simulator that sends sample events to the `fms-events` Kafka topic.
+In a separate terminal, use the `snmptrap` command to send test events to the `SnmpTrapReceiver`.
 
 ```bash
-./run.sh com.distributedFMS.simulation.SnmpEventProducer
+snmptrap -v 2c -c public localhost:10162 '' .1.3.6.1.6.3.1.1.5.3
 ```
 
 ### 5. Verify Operation
 
-Check the logs of the FMS Core Server (`server.log`). You should see messages indicating that events were consumed from Kafka and stored in the Ignite cache:
+Check the logs of the FMS Core Server (`server.log`). You should see messages indicating that events were consumed from Kafka and processed by the deduplication logic:
 
 ```
-INFO: Consumed event from partition 0 with offset 0: ...
-INFO: Put event for device '...' into cache 'fms-events-cache'
+INFO: DeduplicationCorrelator: Processing alarm with key: ...
+INFO: DeduplicationCorrelator: No existing alarm found, creating new alarm with key: ...
 ```
-This confirms the end-to-end data pipeline is working correctly.
+
+Send the same trap again and you should see the `tallyCount` increment:
+
+```
+INFO: DeduplicationCorrelator: Updated existing alarm: ... Tally incremented from 1 to 2
+```
+
+This confirms the end-to-end data pipeline and deduplication logic are working correctly.
