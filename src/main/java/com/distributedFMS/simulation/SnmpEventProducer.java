@@ -42,6 +42,7 @@ public class SnmpEventProducer {
         event.addProperty("timestamp", System.currentTimeMillis());
         event.addProperty("severity", "CRITICAL");
         event.addProperty("message", "CPU utilization exceeds 90%");
+        event.addProperty("eventType", "SimulatedSnmpEvent");
 
         String eventJson = event.toString();
         ProducerRecord<String, String> record = new ProducerRecord<>(TOPIC, deviceId, eventJson);

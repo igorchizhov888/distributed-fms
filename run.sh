@@ -3,6 +3,8 @@
 JAR_PATH="target/distributed-fms-0.1.0-SNAPSHOT.jar"
 
 JVM_OPTS="\
+-Djava.net.preferIPv4Stack=true \
+-Djava.util.logging.config.file=config/java.util.logging.properties \
 --add-opens=java.base/jdk.internal.access=ALL-UNNAMED \
 --add-opens=java.base/jdk.internal.misc=ALL-UNNAMED \
 --add-opens=java.base/sun.nio.ch=ALL-UNNAMED \
@@ -29,8 +31,8 @@ JVM_OPTS="\
 
 if [ -z "$1" ]; then
   # No main class provided, run default application using -jar
-  java $JVM_OPTS -Djava.util.logging.config.file=config/java.util.logging.properties -jar "${JAR_PATH}"
+  java $JVM_OPTS -jar "${JAR_PATH}"
 else
   # Main class provided, run it using -cp
-  java $JVM_OPTS -Djava.util.logging.config.file=config/java.util.logging.properties -cp "${JAR_PATH}" "$1"
+  java $JVM_OPTS -cp "${JAR_PATH}" "$1"
 fi

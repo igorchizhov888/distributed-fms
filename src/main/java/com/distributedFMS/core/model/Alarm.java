@@ -37,6 +37,15 @@ public class Alarm implements Serializable {
     
     @QuerySqlField
     private String correlationId;
+
+    @QuerySqlField
+    private int tallyCount;
+
+    @QuerySqlField
+    private long firstOccurrence;
+
+    @QuerySqlField
+    private long lastOccurrence;
     
     public Alarm() {
         this.alarmId = UUID.randomUUID().toString();
@@ -80,6 +89,15 @@ public class Alarm implements Serializable {
     
     public String getCorrelationId() { return correlationId; }
     public void setCorrelationId(String correlationId) { this.correlationId = correlationId; }
+
+    public int getTallyCount() { return tallyCount; }
+    public void setTallyCount(int tallyCount) { this.tallyCount = tallyCount; }
+
+    public long getFirstOccurrence() { return firstOccurrence; }
+    public void setFirstOccurrence(long firstOccurrence) { this.firstOccurrence = firstOccurrence; }
+
+    public long getLastOccurrence() { return lastOccurrence; }
+    public void setLastOccurrence(long lastOccurrence) { this.lastOccurrence = lastOccurrence; }
     
     @Override
     public boolean equals(Object o) {

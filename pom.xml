@@ -19,7 +19,7 @@
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <ignite.version>2.16.0</ignite.version>
+        <ignite.version>2.17.0</ignite.version>
         <slf4j.version>1.7.36</slf4j.version>
         <junit.version>4.13.2</junit.version>
         <grpc.version>1.64.0</grpc.version>

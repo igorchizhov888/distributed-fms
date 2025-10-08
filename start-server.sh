@@ -11,4 +11,4 @@ java -Djava.util.logging.config.file=config/java.util.logging.properties \
      --add-opens=java.base/java.lang=ALL-UNNAMED \
      --add-opens=java.base/java.util=ALL-UNNAMED \
      -cp target/distributed-fms-0.1.0-SNAPSHOT.jar \
-     com.distributedFMS.DistributedFMSApplication server "$NODE_NAME"
+     com.distributedFMS.DistributedFMSApplication server "$NODE_NAME" &> server.log &

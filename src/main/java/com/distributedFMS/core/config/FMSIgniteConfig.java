@@ -50,9 +50,7 @@ public class FMSIgniteConfig {
             cfg.setDataStorageConfiguration(storageCfg);
         }
         
-        if (!clientMode) {
-            cfg.setCacheConfiguration(createAlarmCacheConfig());
-        }
+        cfg.setCacheConfiguration(createAlarmCacheConfig());
         
         return Ignition.start(cfg);
     }

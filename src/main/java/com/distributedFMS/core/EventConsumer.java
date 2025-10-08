@@ -1,5 +1,10 @@
 package com.distributedFMS.core;
 
+import com.distributedFMS.core.config.FMSIgniteConfig;
+import com.distributedFMS.core.correlation.DeduplicationCorrelator;
+import com.distributedFMS.core.model.Alarm;
+import com.distributedFMS.core.model.AlarmSeverity;
+import org.apache.ignite.configuration.CacheConfiguration;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import org.apache.ignite.Ignite;
@@ -25,9 +30,12 @@ public class EventConsumer implements Runnable {
     private final KafkaConsumer<String, String> consumer;
     private final Ignite ignite;
     private final Gson gson = new Gson();
+    private final DeduplicationCorrelator deduplicationCorrelator;
 
     public EventConsumer(Ignite ignite) {
         this.ignite = ignite;
+        ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName()).getConfiguration(CacheConfiguration.class).setIndexedTypes(String.class, Alarm.class);
+        this.deduplicationCorrelator = new DeduplicationCorrelator(ignite, FMSIgniteConfig.getAlarmsCacheName());
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "fms-core-group");
@@ -40,24 +48,41 @@ public class EventConsumer implements Runnable {
 
     @Override
     public void run() {
-        logger.info("Kafka consumer started, listening for events on topic: " + TOPIC);
-        IgniteCache<String, String> cache = ignite.getOrCreateCache(EVENTS_CACHE_NAME);
+        System.out.println("Kafka consumer started, listening for events on topic: " + TOPIC);
+        IgniteCache<String, String> eventsCache = ignite.getOrCreateCache(EVENTS_CACHE_NAME);
 
         try {
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
                     String eventJson = record.value();
-                    logger.info(String.format("Consumed event from partition %d with offset %d: %s",
+                    System.out.println("Received event JSON: " + eventJson);
+                    System.out.println(String.format("Consumed event from partition %d with offset %d: %s",
                             record.partition(), record.offset(), eventJson));
 
-                    // Extract deviceId from the event JSON to use as a key
                     JsonObject jsonObject = gson.fromJson(eventJson, JsonObject.class);
-                    String deviceId = jsonObject.get("deviceId").getAsString();
+                    String sourceIp = jsonObject.get("sourceIp").getAsString();
 
                     // Put the event into the Ignite cache
-                    cache.put(deviceId, eventJson);
-                    logger.info("Put event for device '" + deviceId + "' into cache '" + EVENTS_CACHE_NAME + "'");
+                    eventsCache.put(sourceIp, eventJson);
+                    logger.info("Put event from source '" + sourceIp + "' into cache '" + EVENTS_CACHE_NAME + "'");
+
+                    if (!jsonObject.has("eventType")) {
+                        logger.warning("Skipping event with missing 'eventType' field: " + eventJson);
+                        continue;
+                    }
+
+                    // Create an Alarm from the event
+                    Alarm alarm = new Alarm(
+                            sourceIp,
+                            AlarmSeverity.INFO, // Default severity
+                            jsonObject.get("eventType").getAsString(),
+                            jsonObject.get("description").getAsString(),
+                            "UNKNOWN" // Default region
+                    );
+
+                    // Process the alarm through the deduplication correlator
+                    deduplicationCorrelator.deduplicate(alarm);
                 }
             }
         } finally {
