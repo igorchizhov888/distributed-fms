@@ -75,3 +75,20 @@ INFO: DeduplicationCorrelator: Updated existing alarm: ... Tally incremented fro
 ```
 
 This confirms the end-to-end data pipeline and deduplication logic are working correctly.
+
+### 6. Querying Alarms via gRPC
+
+The system includes a gRPC service for querying active alarms from the distributed cache. A test client is provided to demonstrate this functionality.
+
+After starting the server and producing some events, you can run the client:
+
+```bash
+java -cp target/distributed-fms-0.1.0-SNAPSHOT.jar com.distributedFMS.client.AlarmQueryClient
+```
+
+The client will perform several queries:
+1.  **Get All Alarms:** Fetches all alarms currently in the system.
+2.  **Filter by Device ID:** Fetches alarms for a specific device.
+3.  **Filter by Severity:** Fetches alarms of a specific severity (e.g., `INFO`, `CRITICAL`).
+
+This demonstrates the filtering capabilities of the `AlarmService`.
