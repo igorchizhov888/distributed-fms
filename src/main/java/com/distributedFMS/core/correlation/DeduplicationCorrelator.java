@@ -30,10 +30,8 @@ public class DeduplicationCorrelator {
     public void deduplicate(Alarm alarm) {
         String key = generateCorrelationKey(alarm);
         logger.info("DeduplicationCorrelator: Processing alarm with key: " + key);
-        IgniteCache<String, Alarm> cache = ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName());
-
         // Attempt to retrieve an existing alarm with the same key
-        Alarm existingAlarm = cache.get(key);
+        Alarm existingAlarm = this.alarmCache.get(key);
 
         if (existingAlarm != null) {
             logger.info("DeduplicationCorrelator: Found existing alarm with key: " + key);
@@ -41,7 +39,7 @@ public class DeduplicationCorrelator {
             // If an alarm with the same key exists, update the tally and last occurrence time
             existingAlarm.setTallyCount(oldTally + 1);
             existingAlarm.setLastOccurrence(System.currentTimeMillis());
-            cache.put(key, existingAlarm); // Update the existing alarm in the cache
+            this.alarmCache.put(key, existingAlarm); // Update the existing alarm in the cache
             logger.info("DeduplicationCorrelator: Updated existing alarm: " + key + ". Tally incremented from " + oldTally + " to " + existingAlarm.getTallyCount());
         } else {
             // If no such alarm exists, create a new one
@@ -49,7 +47,7 @@ public class DeduplicationCorrelator {
             alarm.setFirstOccurrence(System.currentTimeMillis());
             alarm.setLastOccurrence(System.currentTimeMillis());
             alarm.setTallyCount(1);
-            cache.put(key, alarm);
+            this.alarmCache.put(key, alarm);
         }
     }
 
