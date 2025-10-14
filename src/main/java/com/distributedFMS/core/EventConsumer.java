@@ -20,6 +20,8 @@ import java.util.Collections;
 import java.util.Properties;
 import java.util.logging.Logger;
 
+import java.util.concurrent.CountDownLatch;
+
 public class EventConsumer implements Runnable {
 
     private static final Logger logger = Logger.getLogger(EventConsumer.class.getName());
@@ -31,19 +33,30 @@ public class EventConsumer implements Runnable {
     private final Ignite ignite;
     private final Gson gson = new Gson();
     private final DeduplicationCorrelator deduplicationCorrelator;
+    private final CountDownLatch readyLatch = new CountDownLatch(1);
 
     public EventConsumer(Ignite ignite) {
+        this(ignite, BOOTSTRAP_SERVERS);
+    }
+
+    public EventConsumer(Ignite ignite, String bootstrapServers) {
         this.ignite = ignite;
         ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName()).getConfiguration(CacheConfiguration.class).setIndexedTypes(String.class, Alarm.class);
         this.deduplicationCorrelator = new DeduplicationCorrelator(ignite, FMSIgniteConfig.getAlarmsCacheName());
         Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "fms-core-group");
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
+        props.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
 
         this.consumer = new KafkaConsumer<>(props);
         this.consumer.subscribe(Collections.singletonList(TOPIC));
+        readyLatch.countDown();
+    }
+
+    public void awaitReady() throws InterruptedException {
+        readyLatch.await();
     }
 
     @Override

@@ -7,9 +7,39 @@ import org.apache.ignite.Ignite;
 
 import java.io.IOException;
 
+import java.util.concurrent.CountDownLatch;
+
+import java.util.logging.Logger;
+
+
+
 public class DistributedFMSApplication {
 
-    public static void main(String[] args) throws IOException, InterruptedException {
+
+
+    private static final Logger logger = Logger.getLogger(DistributedFMSApplication.class.getName());
+
+
+
+        private volatile EventConsumer eventConsumer;
+
+
+
+        private volatile Ignite ignite;
+
+    private final CountDownLatch igniteLatch = new CountDownLatch(1);
+
+    private String bootstrapServers;
+
+    public DistributedFMSApplication() {
+        this.bootstrapServers = "localhost:9092";
+    }
+
+    public DistributedFMSApplication(String bootstrapServers) {
+        this.bootstrapServers = bootstrapServers;
+    }
+
+    public void main(String[] args) throws IOException, InterruptedException {
         boolean clientMode = true;
         String nodeName = "fms-client";
 
@@ -18,17 +48,40 @@ public class DistributedFMSApplication {
             nodeName = (args.length > 1) ? args[1] : "fms-server";
         }
 
-        try (Ignite ignite = FMSIgniteConfig.createIgniteInstance(nodeName, clientMode)) {
-            if (clientMode) {
-                final FmsCoreServer server = new FmsCoreServer(ignite);
-                server.start();
-                server.blockUntilShutdown();
-            } else {
-                // In server mode, start the event consumer and wait indefinitely.
-                EventConsumer eventConsumer = new EventConsumer(ignite);
-                new Thread(eventConsumer).start();
-                Thread.currentThread().join();
-            }
+        ignite = FMSIgniteConfig.getInstance();
+        igniteLatch.countDown(); // Signal that ignite is initialized
+
+        eventConsumer = new EventConsumer(ignite, bootstrapServers);
+
+        if (clientMode) {
+            final FmsCoreServer server = new FmsCoreServer(ignite);
+            server.start();
+            server.blockUntilShutdown();
+        } else {
+            // In server mode, start the event consumer and wait indefinitely.
+            new Thread(eventConsumer).start();
+            Thread.currentThread().join();
         }
     }
+
+    public void shutdown() {
+        if (eventConsumer != null) {
+            eventConsumer.shutdown();
+        }
+        if (ignite != null) {
+            ignite.close();
+        }
+    }
+
+    public Ignite getIgnite() throws InterruptedException {
+        logger.info("getIgnite() called");
+        igniteLatch.await();
+        logger.info("getIgnite() returning: " + ignite);
+        return ignite;
+    }
+
+    public EventConsumer getEventConsumer() {
+        return eventConsumer;
+    }
 }
+

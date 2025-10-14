@@ -42,6 +42,9 @@ public class Alarm implements Serializable {
     private int tallyCount;
 
     @QuerySqlField
+    private int priority;
+
+    @QuerySqlField
     private long firstOccurrence;
 
     @QuerySqlField
@@ -92,6 +95,9 @@ public class Alarm implements Serializable {
 
     public int getTallyCount() { return tallyCount; }
     public void setTallyCount(int tallyCount) { this.tallyCount = tallyCount; }
+
+    public int getPriority() { return priority; }
+    public void setPriority(int priority) { this.priority = priority; }
 
     public long getFirstOccurrence() { return firstOccurrence; }
     public void setFirstOccurrence(long firstOccurrence) { this.firstOccurrence = firstOccurrence; }
