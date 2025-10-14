@@ -89,7 +89,7 @@ public class EventConsumer implements Runnable {
                     // Create an Alarm from the event
                     Alarm alarm = new Alarm(
                             deviceId,
-                            com.distributedFMS.core.model.AlarmSeverity.INFO, // Default severity
+                            com.distributedFMS.core.model.AlarmSeverity.INFO.name(), // Default severity
                             jsonObject.get("eventType").getAsString(),
                             jsonObject.get("description").getAsString(),
                             "UNKNOWN" // Default region

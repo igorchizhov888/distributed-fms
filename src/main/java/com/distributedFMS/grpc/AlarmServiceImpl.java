@@ -5,9 +5,11 @@ import com.distributedFMS.core.model.Alarm;
 import io.grpc.stub.StreamObserver;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.ScanQuery;
+import org.apache.ignite.cache.query.SqlQuery;
 
 import javax.cache.Cache;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AlarmServiceImpl extends AlarmServiceGrpc.AlarmServiceImplBase {
 
@@ -21,16 +23,40 @@ public class AlarmServiceImpl extends AlarmServiceGrpc.AlarmServiceImplBase {
     public void queryAlarms(QueryAlarmsRequest request, StreamObserver<AlarmMessage> responseObserver) {
         IgniteCache<String, Alarm> cache = ignite.cache(FMSIgniteConfig.getAlarmsCacheName());
 
-        // For now, we will ignore the request filters and stream all alarms.
-        // We will add filtering logic in a subsequent step.
-        try (var cursor = cache.query(new ScanQuery<String, Alarm>())) {
+        StringBuilder sql = new StringBuilder("SELECT * FROM Alarm");
+        List<Object> args = new ArrayList<>();
+        List<String> conditions = new ArrayList<>();
+
+        if (request.hasDeviceId()) {
+            conditions.add("deviceId = ?");
+            args.add(request.getDeviceId());
+        }
+
+        if (request.hasSeverity()) {
+            conditions.add("severity = ?");
+            args.add(request.getSeverity());
+        }
+
+        if (request.hasEventType()) {
+            conditions.add("eventType = ?");
+            args.add(request.getEventType());
+        }
+
+        if (!conditions.isEmpty()) {
+            sql.append(" WHERE ").append(String.join(" AND ", conditions));
+        }
+
+        SqlQuery<String, Alarm> query = new SqlQuery<>(Alarm.class, sql.toString());
+        query.setArgs(args.toArray());
+
+        try (var cursor = cache.query(query)) {
             for (Cache.Entry<String, Alarm> entry : cursor) {
                 Alarm alarm = entry.getValue();
                 AlarmMessage message = AlarmMessage.newBuilder()
                         .setAlarmId(alarm.getAlarmId())
                         .setTimestamp(alarm.getTimestamp())
                         .setDeviceId(alarm.getDeviceId())
-                        .setSeverity(alarm.getSeverity().name())
+                        .setSeverity(alarm.getSeverity())
                         .setEventType(alarm.getEventType())
                         .setDescription(alarm.getDescription())
                         .setGeographicRegion(alarm.getGeographicRegion())

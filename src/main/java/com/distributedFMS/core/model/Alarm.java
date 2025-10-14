@@ -20,7 +20,7 @@ public class Alarm implements Serializable {
     private String deviceId;
     
     @QuerySqlField(index = true)
-    private AlarmSeverity severity;
+    private String severity;
     
     @QuerySqlField
     private String eventType;
@@ -56,7 +56,7 @@ public class Alarm implements Serializable {
         this.status = AlarmStatus.ACTIVE;
     }
     
-    public Alarm(String deviceId, AlarmSeverity severity, String eventType, 
+    public Alarm(String deviceId, String severity, String eventType, 
                  String description, String geographicRegion) {
         this();
         this.deviceId = deviceId;
@@ -75,8 +75,8 @@ public class Alarm implements Serializable {
     public String getDeviceId() { return deviceId; }
     public void setDeviceId(String deviceId) { this.deviceId = deviceId; }
     
-    public AlarmSeverity getSeverity() { return severity; }
-    public void setSeverity(AlarmSeverity severity) { this.severity = severity; }
+    public String getSeverity() { return severity; }
+    public void setSeverity(String severity) { this.severity = severity; }
     
     public String getEventType() { return eventType; }
     public void setEventType(String eventType) { this.eventType = eventType; }

@@ -43,10 +43,17 @@ public class AlarmQueryClient {
     public static void main(String[] args) throws InterruptedException {
         AlarmQueryClient client = new AlarmQueryClient("localhost", 50051);
         try {
-            // Create a request (empty for now, to get all alarms)
-            QueryAlarmsRequest request = QueryAlarmsRequest.newBuilder().build();
+            System.out.println("\n--- Query 1: Get all alarms ---");
+            QueryAlarmsRequest allRequest = QueryAlarmsRequest.newBuilder().build();
+            client.queryAlarms(allRequest);
 
-            client.queryAlarms(request);
+            System.out.println("\n--- Query 2: Get alarms for device_id = device-18 ---");
+            QueryAlarmsRequest byDeviceRequest = QueryAlarmsRequest.newBuilder().setDeviceId("device-18").build();
+            client.queryAlarms(byDeviceRequest);
+
+            System.out.println("\n--- Query 3: Get alarms for severity = INFO ---");
+            QueryAlarmsRequest bySeverityRequest = QueryAlarmsRequest.newBuilder().setSeverity("INFO").build();
+            client.queryAlarms(bySeverityRequest);
 
         } finally {
             client.shutdown();
