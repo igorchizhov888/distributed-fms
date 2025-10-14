@@ -24,3 +24,35 @@ message SubmitEventRequest {
 message SubmitEventResponse {
   string event_id = 1;
 }
+
+// The Alarm Query service definition.
+service AlarmService {
+  // Queries for alarms, with optional filtering.
+  rpc QueryAlarms (QueryAlarmsRequest) returns (stream AlarmMessage) {}
+}
+
+// Mirrors the Alarm.java model
+message AlarmMessage {
+  string alarm_id = 1;
+  int64 timestamp = 2;
+  string device_id = 3;
+  string severity = 4; // Using string for enum representation
+  string event_type = 5;
+  string description = 6;
+  string geographic_region = 7;
+  string status = 8;
+  int32 tally_count = 9;
+  int64 first_occurrence = 10;
+  int64 last_occurrence = 11;
+}
+
+// Request message for querying alarms.
+// All fields are optional; if a field is omitted, it is not used for filtering.
+message QueryAlarmsRequest {
+  // Optional: Filter by alarm severity.
+  optional string severity = 1;
+  // Optional: Filter by source device ID.
+  optional string device_id = 2;
+  // Optional: Filter by event type.
+  optional string event_type = 3;
+}

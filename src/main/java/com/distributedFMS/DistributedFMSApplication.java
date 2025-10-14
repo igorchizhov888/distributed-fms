@@ -39,28 +39,23 @@ public class DistributedFMSApplication {
         this.bootstrapServers = bootstrapServers;
     }
 
-    public void main(String[] args) throws IOException, InterruptedException {
-        boolean clientMode = true;
-        String nodeName = "fms-client";
+    public static void main(String[] args) throws IOException, InterruptedException {
+        DistributedFMSApplication app = new DistributedFMSApplication();
+        app.run(args);
+    }
 
-        if (args.length > 0 && "server".equalsIgnoreCase(args[0])) {
-            clientMode = false;
-            nodeName = (args.length > 1) ? args[1] : "fms-server";
-        }
+    public void run(String[] args) throws IOException, InterruptedException {
+        // Default to server mode if no arguments are provided, or if the first argument is 'server'.
+        if (args.length == 0 || "server".equalsIgnoreCase(args[0])) {
+            ignite = FMSIgniteConfig.getInstance();
+            igniteLatch.countDown(); // Signal that ignite is initialized
 
-        ignite = FMSIgniteConfig.getInstance();
-        igniteLatch.countDown(); // Signal that ignite is initialized
-
-        eventConsumer = new EventConsumer(ignite, bootstrapServers);
-
-        if (clientMode) {
             final FmsCoreServer server = new FmsCoreServer(ignite);
             server.start();
             server.blockUntilShutdown();
         } else {
-            // In server mode, start the event consumer and wait indefinitely.
-            new Thread(eventConsumer).start();
-            Thread.currentThread().join();
+            // Handle other modes if necessary, for now, just log.
+            logger.warning("Unknown application mode specified. Exiting.");
         }
     }
 

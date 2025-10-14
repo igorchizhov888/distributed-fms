@@ -1,5 +1,6 @@
 package com.distributedFMS.core;
 
+import com.distributedFMS.grpc.AlarmServiceImpl;
 import com.distributedFMS.grpc.ManagementServiceImpl;
 import io.grpc.Server;
 import io.grpc.ServerBuilder;
@@ -26,6 +27,7 @@ public class FmsCoreServer {
         int port = 50051;
         grpcServer = ServerBuilder.forPort(port)
                 .addService(new ManagementServiceImpl())
+                .addService(new AlarmServiceImpl(ignite))
                 .build()
                 .start();
         logger.info("gRPC Server started, listening on " + port);

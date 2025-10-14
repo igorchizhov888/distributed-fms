@@ -55,7 +55,7 @@ public class DeduplicationCorrelator {
      * Generate correlation key from Alarm object
      */
     private String generateCorrelationKey(Alarm alarm) {
-        return generateCorrelationKey(alarm.getSourceDevice(), alarm.getEventType());
+        return generateCorrelationKey(alarm.getDeviceId(), alarm.getEventType());
     }
 
     /**

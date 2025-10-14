@@ -77,7 +77,7 @@ public class EventProcessingTest {
     @Test
     public void testEventProcessing() {
         // Define the test event and expected key
-        String eventJson = "{\"sourceIp\":\"192.168.1.1\",\"eventType\":\"link down\",\"description\":\"Link to router is down\"}";
+        String eventJson = "{\"device_id\":\"192.168.1.1\",\"eventType\":\"link down\",\"description\":\"Link to router is down\"}";
         String expectedKey = "192.168.1.1_link down";
 
         // Send the event to Kafka
@@ -95,7 +95,7 @@ public class EventProcessingTest {
         await().atMost(Duration.ofSeconds(10)).untilAsserted(() -> {
             Alarm alarm = alarmCache.get(expectedKey);
             assertNotNull(alarm, "Alarm should be present in the cache");
-            assertEquals("192.168.1.1", alarm.getSourceDevice());
+            assertEquals("192.168.1.1", alarm.getDeviceId());
             assertEquals("link down", alarm.getEventType());
             assertEquals(1, alarm.getTallyCount());
         });

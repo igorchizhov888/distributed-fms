@@ -75,29 +75,25 @@ public class EventConsumer implements Runnable {
                             record.partition(), record.offset(), eventJson));
 
                     JsonObject jsonObject = gson.fromJson(eventJson, JsonObject.class);
-                    String sourceIp = jsonObject.get("sourceIp").getAsString();
+                    String deviceId = jsonObject.get("device_id").getAsString();
 
                     // Put the event into the Ignite cache
-                    eventsCache.put(sourceIp, eventJson);
-                    logger.info("Put event from source '" + sourceIp + "' into cache '" + EVENTS_CACHE_NAME + "'");
+                    eventsCache.put(deviceId, eventJson);
+                    logger.info("Put event from source '" + deviceId + "' into cache '" + EVENTS_CACHE_NAME + "'");
 
                     if (!jsonObject.has("eventType")) {
                         logger.warning("Skipping event with missing 'eventType' field: " + eventJson);
                         continue;
                     }
 
-                    AlarmPriority priority = AlarmPrioritizationEngine.getPriority(jsonObject.get("eventType").getAsString());
-
                     // Create an Alarm from the event
                     Alarm alarm = new Alarm(
-                            sourceIp,
-                            priority, // Default severity
+                            deviceId,
+                            com.distributedFMS.core.model.AlarmSeverity.INFO, // Default severity
                             jsonObject.get("eventType").getAsString(),
                             jsonObject.get("description").getAsString(),
                             "UNKNOWN" // Default region
                     );
-
-                    logger.info("Created alarm: " + alarm.toString());
 
                     // Process the alarm through the deduplication correlator
                     deduplicationCorrelator.deduplicate(alarm);

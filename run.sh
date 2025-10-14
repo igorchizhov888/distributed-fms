@@ -29,10 +29,4 @@ JVM_OPTS="\
 --add-opens=java.base/java.text=ALL-UNNAMED \
 --add-opens java.desktop/java.awt.font=ALL-UNNAMED"
 
-if [ -z "$1" ]; then
-  # No main class provided, run default application using -jar
-  java $JVM_OPTS -jar "${JAR_PATH}"
-else
-  # Main class provided, run it using -cp
-  java $JVM_OPTS -cp "${JAR_PATH}" "$1"
-fi
+java $JVM_OPTS -jar "${JAR_PATH}" "$@"
