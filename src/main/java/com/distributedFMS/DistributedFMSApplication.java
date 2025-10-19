@@ -32,7 +32,7 @@ public class DistributedFMSApplication {
     private String bootstrapServers;
 
     public DistributedFMSApplication() {
-        this.bootstrapServers = "localhost:9092";
+        this.bootstrapServers = "kafka:29092";
     }
 
     public DistributedFMSApplication(String bootstrapServers) {

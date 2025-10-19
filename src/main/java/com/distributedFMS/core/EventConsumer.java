@@ -27,7 +27,7 @@ public class EventConsumer implements Runnable {
 
     private static final Logger logger = Logger.getLogger(EventConsumer.class.getName());
     private static final String TOPIC = "fms-events";
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String BOOTSTRAP_SERVERS = "kafka:29092";
     private static final String EVENTS_CACHE_NAME = "fms-events-cache";
 
     private final KafkaConsumer<String, String> consumer;
@@ -75,7 +75,7 @@ public class EventConsumer implements Runnable {
                             record.partition(), record.offset(), eventJson));
 
                     JsonObject jsonObject = gson.fromJson(eventJson, JsonObject.class);
-                    String deviceId = jsonObject.get("device_id").getAsString();
+                    String deviceId = jsonObject.get("sourceIp").getAsString();
 
                     // Put the event into the Ignite cache
                     eventsCache.put(deviceId, eventJson);
