@@ -71,3 +71,15 @@ services:
       - "9901:9901"
     depends_on:
       - fms-server
+
+  fms-ui:
+    build:
+      context: .
+      dockerfile: Dockerfile.ui
+    container_name: fms-ui
+    networks:
+      - fms-net
+    ports:
+      - "3000:80"
+    depends_on:
+      - envoy
