@@ -1,0 +1,29 @@
+# Dockerfile for the FMS Server
+FROM openjdk:17-jdk-slim
+
+# Accept a build-time argument for the application version
+ARG APP_VERSION=0.1.0-SNAPSHOT
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the logging configuration
+COPY config ./config
+
+# Copy the application JAR
+COPY target/distributed-fms-${APP_VERSION}.jar fms-app.jar
+
+# Expose the gRPC port
+EXPOSE 50051
+
+# Command to run the server
+CMD ["java", \
+     "-Djava.util.logging.config.file=config/java.util.logging.properties", \
+     "--add-opens=java.base/java.nio=ALL-UNNAMED", \
+     "--add-opens=java.base/java.lang=ALL-UNNAMED", \
+     "--add-opens=java.base/java.util=ALL-UNNAMED", \
+     "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED", \
+     "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED", \
+     "--add-opens=java.base/sun.util.calendar=ALL-UNNAMED", \
+     "-jar", "fms-app.jar", \
+     "server", "docker-node-1"]

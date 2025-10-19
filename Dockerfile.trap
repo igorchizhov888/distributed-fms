@@ -1,0 +1,17 @@
+# Dockerfile for the SNMP Trap Receiver
+FROM openjdk:17-jdk-slim
+
+# Accept a build-time argument for the application version
+ARG APP_VERSION=0.1.0-SNAPSHOT
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the application JAR
+COPY target/distributed-fms-${APP_VERSION}.jar fms-app.jar
+
+# Expose the SNMP trap port
+EXPOSE 10162/udp
+
+# Command to run the trap receiver
+CMD ["java", "-cp", "fms-app.jar", "com.distributedFMS.agent.SnmpTrapReceiver"]

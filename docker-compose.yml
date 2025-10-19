@@ -1,8 +1,15 @@
-version: '3'
+version: '3.8'
+
+networks:
+  fms-net:
+    driver: bridge
+
 services:
   zookeeper:
     image: confluentinc/cp-zookeeper:7.3.0
     container_name: zookeeper
+    networks:
+      - fms-net
     environment:
       ZOOKEEPER_CLIENT_PORT: 2181
       ZOOKEEPER_TICK_TIME: 2000
@@ -10,6 +17,8 @@ services:
   kafka:
     image: confluentinc/cp-kafka:7.3.0
     container_name: kafka
+    networks:
+      - fms-net
     ports:
       - "9092:9092"
     depends_on:
@@ -21,3 +30,44 @@ services:
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  fms-server:
+    build:
+      context: .
+      dockerfile: Dockerfile.fms
+      args:
+        - APP_VERSION=${APP_VERSION}
+    container_name: fms-server
+    networks:
+      - fms-net
+    ports:
+      - "50051:50051"
+    depends_on:
+      - kafka
+
+  trap-receiver:
+    build:
+      context: .
+      dockerfile: Dockerfile.trap
+      args:
+        - APP_VERSION=${APP_VERSION}
+    container_name: trap-receiver
+    networks:
+      - fms-net
+    ports:
+      - "10162:10162/udp"
+    depends_on:
+      - kafka
+
+  envoy:
+    build:
+      context: .
+      dockerfile: Dockerfile.envoy
+    container_name: envoy
+    networks:
+      - fms-net
+    ports:
+      - "8080:8080"
+      - "9901:9901"
+    depends_on:
+      - fms-server

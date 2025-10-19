@@ -1,0 +1,72 @@
+admin:
+  access_log_path: "/dev/stdout"
+  address:
+    socket_address:
+      address: 0.0.0.0
+      port_value: 9901
+
+static_resources:
+  listeners:
+    - name: listener_0
+      address:
+        socket_address:
+          address: 0.0.0.0
+          port_value: 8080 # Port for incoming gRPC-Web requests
+      filter_chains:
+        - filters:
+            - name: envoy.filters.network.http_connection_manager
+              typed_config:
+                "@type": type.googleapis.com/envoy.extensions.filters.network.http_connection_manager.v3.HttpConnectionManager
+                stat_prefix: ingress_http
+                codec_type: AUTO
+                route_config:
+                  name: local_route
+                  virtual_hosts:
+                    - name: local_service
+                      domains: ["*"]
+                      routes:
+                        - match:
+                            prefix: "/"
+                          route:
+                            cluster: grpc_backend
+                      cors:
+                        allow_origin_string_match:
+                          - prefix: "*" # Adjust this to your frontend origin in production
+                        allow_methods: GET, PUT, DELETE, POST, OPTIONS
+                        allow_headers: keep-alive,user-agent,cache-control,content-type,content-transfer-encoding,custom-header-1,x-accept-content-transfer-encoding,x-accept-response-streaming,x-grpc-web,x-user-agent
+                        expose_headers: custom-header-1,grpc-status,grpc-message
+                        max_age: "1728000"
+                http_filters:
+                  - name: envoy.filters.http.grpc_web
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.grpc_web.v3.GrpcWeb
+                  - name: envoy.filters.http.router
+                    typed_config:
+                      "@type": type.googleapis.com/envoy.extensions.filters.http.router.v3.Router
+
+  clusters:
+    - name: grpc_backend
+      connect_timeout: 0.25s
+      type: LOGICAL_DNS
+      # This assumes your gRPC server is accessible at 'localhost:50051' from within Docker.
+      # If running in a docker-compose network, use the service name (e.g., 'fms-server:50051').
+      # If your gRPC server is running directly on the host, 'localhost' is often used.
+      lb_policy: ROUND_ROBIN
+      http2_protocol_options: {} # Enable HTTP/2 for gRPC communication
+      health_checks: []
+      outlier_detection:
+        consecutive_5xx: 10000
+        consecutive_local_origin_failure: 10000
+        split_external_local_origin_errors: true
+        max_ejection_percent: 100
+        interval: 10s
+        base_ejection_time: 1s
+      load_assignment:
+        cluster_name: grpc_backend
+        endpoints:
+          - lb_endpoints:
+              - endpoint:
+                  address:
+                    socket_address:
+                      address: fms-server # Use the service name for Docker DNS resolution
+                      port_value: 50051 # Your gRPC server port
