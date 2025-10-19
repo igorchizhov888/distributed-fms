@@ -19,7 +19,7 @@ public class SnmpTrapReceiver implements CommandResponder {
 
     private static final Logger logger = Logger.getLogger(SnmpTrapReceiver.class.getName());
     private static final String KAFKA_TOPIC = "fms-events";
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String BOOTSTRAP_SERVERS = "kafka:29092";
 
     private KafkaProducer<String, String> kafkaProducer;
     private Snmp snmp;

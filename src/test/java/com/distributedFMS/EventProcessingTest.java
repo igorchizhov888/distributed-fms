@@ -77,7 +77,7 @@ public class EventProcessingTest {
     @Test
     public void testEventProcessing() {
         // Define the test event and expected key
-        String eventJson = "{\"device_id\":\"192.168.1.1\",\"eventType\":\"link down\",\"description\":\"Link to router is down\"}";
+        String eventJson = "{\"sourceIp\":\"192.168.1.1\",\"eventType\":\"link down\",\"description\":\"Link to router is down\"}";
         String expectedKey = "192.168.1.1_link down";
 
         // Send the event to Kafka

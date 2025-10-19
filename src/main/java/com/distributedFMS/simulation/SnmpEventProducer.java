@@ -21,7 +21,7 @@ public class SnmpEventProducer {
 
     private static final Logger logger = Logger.getLogger(SnmpEventProducer.class.getName());
     private static final String TOPIC = "fms-events";
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
+    private static final String BOOTSTRAP_SERVERS = "kafka:29092";
     private final KafkaProducer<String, String> producer;
     private final Random random = new Random();
     private final ScheduledExecutorService scheduler = Executors.newSingleThreadScheduledExecutor();
