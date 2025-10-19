@@ -1,6 +1,8 @@
 #!/bin/bash
+echo "Starting FMS application..." > /home/gary/Gemini_CLI/distributed-fms/startup.log
 
-JAR_PATH="target/distributed-fms-0.1.0-SNAPSHOT.jar"
+export APP_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
+JAR_PATH="target/distributed-fms-${APP_VERSION}.jar"
 
 JVM_OPTS="\
 -Djava.net.preferIPv4Stack=true \
@@ -29,4 +31,4 @@ JVM_OPTS="\
 --add-opens=java.base/java.text=ALL-UNNAMED \
 --add-opens java.desktop/java.awt.font=ALL-UNNAMED"
 
-java $JVM_OPTS -jar "${JAR_PATH}" "$@"
+java $JVM_OPTS -jar "${JAR_PATH}" "$@" > /home/gary/Gemini_CLI/distributed-fms/startup.log 2>&1
