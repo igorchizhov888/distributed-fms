@@ -17,13 +17,4 @@ COPY target/distributed-fms-${APP_VERSION}.jar fms-app.jar
 EXPOSE 50051
 
 # Command to run the server
-CMD ["java", \
-     "-Djava.util.logging.config.file=config/java.util.logging.properties", \
-     "--add-opens=java.base/java.nio=ALL-UNNAMED", \
-     "--add-opens=java.base/java.lang=ALL-UNNAMED", \
-     "--add-opens=java.base/java.util=ALL-UNNAMED", \
-     "--add-opens=java.base/java.util.concurrent=ALL-UNNAMED", \
-     "--add-opens=java.base/sun.nio.ch=ALL-UNNAMED", \
-     "--add-opens=java.base/sun.util.calendar=ALL-UNNAMED", \
-     "-jar", "fms-app.jar", \
-     "server", "docker-node-1"]
+CMD ["/bin/sh", "-c", "sleep 30; java -Djava.util.logging.config.file=config/java.util.logging.properties --add-opens=java.base/java.nio=ALL-UNNAMED --add-opens=java.base/java.lang=ALL-UNNAMED --add-opens=java.base/java.util=ALL-UNNAMED --add-opens=java.base/java.util.concurrent=ALL-UNNAMED --add-opens=java.base/sun.nio.ch=ALL-UNNAMED --add-opens=java.base/sun.util.calendar=ALL-UNNAMED -jar fms-app.jar server docker-node-1"]

@@ -8,4 +8,4 @@ echo "Building and running version: $APP_VERSION"
 
 # Run your build. Docker Compose will automatically read $APP_VERSION
 # and pass it to the Dockerfile.
-docker compose up --build
+docker compose up --build -d

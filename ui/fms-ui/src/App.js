@@ -8,6 +8,7 @@ function App() {
 
   useEffect(() => {
     const unsubscribe = subscribeToAlarms((newAlarm) => {
+      console.log('Received data:', newAlarm);
       setAlarms((prevAlarms) => [...prevAlarms, newAlarm]);
     });
   //
@@ -23,7 +24,7 @@ function App() {
       <header className="App-header">
         <h1>FMS Alarms</h1>
       </header>
-      {/* <div className="App-content">
+      <div className="App-content">
         <table>
           <thead>
             <tr>
@@ -39,13 +40,12 @@ function App() {
                 <td>{alarm.alarmId}</td>
                 <td>{alarm.deviceId}</td>
                 <td>{alarm.severity}</td>
-                <td>{alarm.description}</td>
+                <td>{JSON.stringify(alarm.description)}</td>
               </tr>
             ))}
           </tbody>
         </table>
-      </div> */}
-    </div>
+      </div>    </div>
   );
 }
 

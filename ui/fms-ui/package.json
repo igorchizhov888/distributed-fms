@@ -32,7 +32,8 @@
     "start": "react-app-rewired start",
     "build": "react-app-rewired build",
     "test": "react-app-rewired test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "generate-grpc": "grpc_tools_node_protoc --proto_path=../../src/main/proto --js_out=import_style=commonjs,binary:./src/generated --grpc-web_out=import_style=commonjs,mode=grpcwebtext:./src/generated FMS.proto"
   },
   "eslintConfig": {
     "extends": [

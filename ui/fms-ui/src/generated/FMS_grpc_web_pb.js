@@ -194,8 +194,8 @@ proto.com.distributedFMS.AlarmServicePromiseClient =
  *   !proto.com.distributedFMS.QueryAlarmsRequest,
  *   !proto.com.distributedFMS.AlarmMessage>}
  */
-const methodDescriptor_AlarmService_GetAlarms = new grpc.web.MethodDescriptor(
-  '/com.distributedFMS.AlarmService/GetAlarms',
+const methodDescriptor_AlarmService_QueryAlarms = new grpc.web.MethodDescriptor(
+  '/com.distributedFMS.AlarmService/QueryAlarms',
   grpc.web.MethodType.SERVER_STREAMING,
   proto.com.distributedFMS.QueryAlarmsRequest,
   proto.com.distributedFMS.AlarmMessage,
@@ -217,13 +217,13 @@ const methodDescriptor_AlarmService_GetAlarms = new grpc.web.MethodDescriptor(
  * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.AlarmMessage>}
  *     The XHR Node Readable Stream
  */
-proto.com.distributedFMS.AlarmServiceClient.prototype.getAlarms =
+proto.com.distributedFMS.AlarmServiceClient.prototype.queryAlarms =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/com.distributedFMS.AlarmService/GetAlarms',
+      '/com.distributedFMS.AlarmService/QueryAlarms',
       request,
       metadata || {},
-      methodDescriptor_AlarmService_GetAlarms);
+      methodDescriptor_AlarmService_QueryAlarms);
 };
 
 
@@ -234,69 +234,13 @@ proto.com.distributedFMS.AlarmServiceClient.prototype.getAlarms =
  * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.AlarmMessage>}
  *     The XHR Node Readable Stream
  */
-proto.com.distributedFMS.AlarmServicePromiseClient.prototype.getAlarms =
+proto.com.distributedFMS.AlarmServicePromiseClient.prototype.queryAlarms =
     function(request, metadata) {
   return this.client_.serverStreaming(this.hostname_ +
-      '/com.distributedFMS.AlarmService/GetAlarms',
+      '/com.distributedFMS.AlarmService/QueryAlarms',
       request,
       metadata || {},
-      methodDescriptor_AlarmService_GetAlarms);
-};
-
-
-/**
- * @const
- * @type {!grpc.web.MethodDescriptor<
- *   !proto.com.distributedFMS.SubscriptionRequest,
- *   !proto.com.distributedFMS.AlarmMessage>}
- */
-const methodDescriptor_AlarmService_SubscribeToAlarms = new grpc.web.MethodDescriptor(
-  '/com.distributedFMS.AlarmService/SubscribeToAlarms',
-  grpc.web.MethodType.SERVER_STREAMING,
-  proto.com.distributedFMS.SubscriptionRequest,
-  proto.com.distributedFMS.AlarmMessage,
-  /**
-   * @param {!proto.com.distributedFMS.SubscriptionRequest} request
-   * @return {!Uint8Array}
-   */
-  function(request) {
-    return request.serializeBinary();
-  },
-  proto.com.distributedFMS.AlarmMessage.deserializeBinary
-);
-
-
-/**
- * @param {!proto.com.distributedFMS.SubscriptionRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.AlarmMessage>}
- *     The XHR Node Readable Stream
- */
-proto.com.distributedFMS.AlarmServiceClient.prototype.subscribeToAlarms =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/com.distributedFMS.AlarmService/SubscribeToAlarms',
-      request,
-      metadata || {},
-      methodDescriptor_AlarmService_SubscribeToAlarms);
-};
-
-
-/**
- * @param {!proto.com.distributedFMS.SubscriptionRequest} request The request proto
- * @param {?Object<string, string>=} metadata User defined
- *     call metadata
- * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.AlarmMessage>}
- *     The XHR Node Readable Stream
- */
-proto.com.distributedFMS.AlarmServicePromiseClient.prototype.subscribeToAlarms =
-    function(request, metadata) {
-  return this.client_.serverStreaming(this.hostname_ +
-      '/com.distributedFMS.AlarmService/SubscribeToAlarms',
-      request,
-      metadata || {},
-      methodDescriptor_AlarmService_SubscribeToAlarms);
+      methodDescriptor_AlarmService_QueryAlarms);
 };
 
 

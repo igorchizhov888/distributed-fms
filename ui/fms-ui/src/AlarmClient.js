@@ -1,11 +1,11 @@
 import { AlarmServiceClient } from './generated/FMS_grpc_web_pb.js';
-import { SubscriptionRequest } from './generated/FMS_pb';
+import { QueryAlarmsRequest } from './generated/FMS_pb';
 
 const client = new AlarmServiceClient('http://localhost:8080');
 
 export const subscribeToAlarms = (callback) => {
-  const request = new SubscriptionRequest();
-  const stream = client.subscribeToAlarms(request, {});
+  const request = new QueryAlarmsRequest();
+  const stream = client.queryAlarms(request, {});
 
   stream.on('data', (response) => {
     callback(response.toObject());
