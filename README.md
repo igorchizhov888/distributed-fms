@@ -1,19 +1,30 @@
 # Distributed Fault Management System
-
-A geo-distributed, high-performance fault management system for telecommunications networks, built on Apache Ignite and Apache Kafka.
+A geo-distributed, high-performance fault management system for telecommunications networks, built on Apache Ignite and Apache Kafka, with a modern React web UI.
 
 ## Problem Statement
-
-Traditional centralized fault management systems cannot handle modern network event volumes and geographic distribution requirements. This project implements distributed, edge-based fault management using in-memory data grids and a message bus for event ingestion.
+Traditional centralized fault management systems cannot handle modern network event volumes and geographic distribution requirements. This project implements distributed, edge-based fault management using in-memory data grids and a message bus for event ingestion, exposed through a web-based dashboard.
 
 ## Key Features
-
 - **Event-Driven Architecture**: Ingests events via an Apache Kafka message bus.
 - **Geographic Distribution**: Process events at network edge locations using custom affinity functions in Apache Ignite.
 - **Real-time Processing**: Handle thousands of events per second per node with sub-millisecond response times.
 - **Distributed Caching**: Events are consumed and stored in a distributed Apache Ignite cache.
 - **Active-Active Clustering**: Automatic failover with zero data loss across distributed nodes (feature of Ignite).
 - **Universal Network Support**: Monitor any network type by adding appropriate software adapters.
+- **Modern Web UI**: React-based dashboard for viewing alarms in real-time.
+- **gRPC & gRPC-Web**: Full-duplex streaming support for real-time data updates.
+- **Containerized**: Complete Docker containerization for easy deployment.
+
+## Architecture
+```
+SNMP Traps → SnmpTrapReceiver → Kafka → FMS Server → Ignite Cache
+                                                ↓
+                                        gRPC Service
+                                        (via Envoy Proxy)
+                                                ↓
+                                        React UI
+                                      (gRPC-Web)
+```
 
 ## Quick Start
 
@@ -21,74 +32,131 @@ Traditional centralized fault management systems cannot handle modern network ev
 - Java 17+
 - Maven 3.6+
 - Docker and Docker Compose
+- Node.js 18+ (for UI development)
 - `snmptrap` command-line tool
 
-### 1. Build the Project
+### Fastest Way: Automated Script (Recommended)
+Start everything with one command:
 
-First, build the application using Maven. This will compile the code and create a single executable JAR file with all dependencies.
+```bash
+./start-fms.sh
+```
 
+This script will:
+1. Stop any running containers
+2. Build all Docker images
+3. Start all services (Kafka, Zookeeper, FMS Server, Envoy Proxy, React UI)
+4. Generate sample SNMP traps
+5. Open the web UI in your browser (http://localhost:3000)
+
+### Manual Setup
+
+#### 1. Build the Project
 ```bash
 mvn clean install
 ```
 
-### 2. Start the Kafka Environment
-
-The system depends on Apache Kafka and Zookeeper. A Docker Compose file is provided to easily start these services.
-
+#### 2. Start All Services with Docker Compose
 ```bash
+export APP_VERSION=0.1.0-SNAPSHOT
 docker compose up -d
 ```
-This will start the containers in the background.
 
-### 3. Start the FMS Server and Trap Receiver
+This starts:
+- Zookeeper (port 2181)
+- Kafka (port 9092)
+- FMS Server (port 50051 - gRPC)
+- SNMP Trap Receiver (port 10162 - UDP)
+- Envoy Proxy (port 8080 - gRPC-Web)
+- React UI (port 3000 - HTTP)
 
-Run the FMS server and the SNMP trap receiver in the background using the provided scripts:
-
+#### 3. Send SNMP Traps
 ```bash
-./run-app.sh server &
-./start-trap-receiver.sh &
+snmptrap -v 2c -c public 127.0.0.1:10162 '' 1.3.6.1.6.3.1.1.5.4 1.3.6.1.4.1.8072.2.3.0.1 s "Test Alarm"
 ```
 
-The server will start, connect to the Kafka bus, and begin listening for events. Log output is directed to `server.log` and `trap.log`.
+#### 4. View the UI
+Open http://localhost:3000 in your browser to see the alarms table update in real-time.
 
-### 4. Send Test Events
+## Accessing the System
 
-In a separate terminal, use the `snmptrap` command to send test events to the `SnmpTrapReceiver`.
+| Service | URL/Port | Purpose |
+|---------|----------|---------|
+| React UI | http://localhost:3000 | Web dashboard for viewing alarms |
+| Envoy Admin | http://localhost:9901 | Envoy proxy administration |
+| gRPC Server | localhost:50051 | Backend gRPC service (internal) |
+| Kafka | localhost:9092 | Message broker (internal) |
 
+## Stopping the System
 ```bash
-snmptrap -v 2c -c public localhost:10162 '' .1.3.6.1.6.3.1.1.5.3
+docker compose down
 ```
 
-### 5. Verify Operation
+## Technology Stack
+- **Backend**: Java 17, Apache Ignite, Apache Kafka, gRPC
+- **Frontend**: React 18, JavaScript, CSS3
+- **Proxy**: Envoy (for gRPC-Web support)
+- **Infrastructure**: Docker, Docker Compose
+- **Protocol**: gRPC with gRPC-Web (Envoy-mediated)
 
-Check the logs of the FMS Core Server (`server.log`). You should see messages indicating that events were consumed from Kafka and processed by the deduplication logic:
-
+## Project Structure
 ```
-INFO: DeduplicationCorrelator: Processing alarm with key: ...
-INFO: DeduplicationCorrelator: No existing alarm found, creating new alarm with key: ...
+distributed-fms/
+├── src/                          # Java backend source code
+│   ├── main/
+│   │   ├── java/               # Backend implementation
+│   │   ├── proto/              # Protocol Buffer definitions
+│   │   └── resources/
+│   └── test/                   # Integration tests
+├── ui/                          # React frontend
+│   └── fms-ui/
+│       ├── src/
+│       │   ├── App.js          # Main React component
+│       │   ├── App.css         # Styling
+│       │   ├── AlarmClient.js  # gRPC-Web client
+│       │   └── generated/      # Auto-generated gRPC stubs
+│       └── package.json
+├── Dockerfile.*                 # Docker images for each service
+├── docker-compose.yml           # Docker Compose configuration
+├── envoy.yaml                   # Envoy proxy configuration
+└── start-fms.sh                 # Automation script
 ```
 
-Send the same trap again and you should see the `tallyCount` increment:
+## Development
 
-```
-INFO: DeduplicationCorrelator: Updated existing alarm: ... Tally incremented from 1 to 2
-```
-
-This confirms the end-to-end data pipeline and deduplication logic are working correctly.
-
-### 6. Querying Alarms via gRPC
-
-The system includes a gRPC service for querying active alarms from the distributed cache. A test client is provided to demonstrate this functionality.
-
-After starting the server and producing some events, you can run the client:
-
+### Building the Backend
 ```bash
-java -cp target/distributed-fms-0.1.0-SNAPSHOT.jar com.distributedFMS.client.AlarmQueryClient
+mvn clean install
 ```
 
-The client will perform several queries:
-1.  **Get All Alarms:** Fetches all alarms currently in the system.
-2.  **Filter by Device ID:** Fetches alarms for a specific device.
-3.  **Filter by Severity:** Fetches alarms of a specific severity (e.g., `INFO`, `CRITICAL`).
+### Building the Frontend
+```bash
+cd ui/fms-ui
+npm install
+npm run build
+```
 
-This demonstrates the filtering capabilities of the `AlarmService`.
+### Running Tests
+```bash
+mvn test
+```
+
+## Troubleshooting
+
+### Alarms not appearing in UI?
+1. Check that SNMP traps are being received: `docker logs trap-receiver`
+2. Verify Kafka is running: `docker logs kafka`
+3. Check FMS Server logs: `docker logs fms-server`
+4. Open browser console (F12) to see gRPC connection errors
+
+### Port already in use?
+If ports are already in use, modify `docker-compose.yml` or stop the conflicting service:
+```bash
+docker compose down
+```
+
+## Contributing
+Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+
+## License
+This project is open source and available under the Apache License 2.0. See the [LICENSE](LICENSE) file for details.

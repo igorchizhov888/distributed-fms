@@ -1,12 +1,61 @@
 # Changelog
-
 All notable changes to this project will be documented in this file.
-
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.2.0] - 2025-10-14
+## [1.0.0] - 2025-10-24
+### Added
+- **React Web UI**: Implemented a modern React-based dashboard for viewing alarms in real-time.
+  - Live alarm table with sorting and filtering capabilities
+  - Real-time data streaming via gRPC-Web
+  - Professional styling and responsive design
+- **gRPC-Web Support**: Full gRPC-Web implementation enabling browser-based clients to connect to backend services.
+  - Auto-generated gRPC-Web stubs using protoc-gen-grpc-web
+  - Support for server-streaming responses
+- **Envoy Proxy**: Integrated Envoy proxy for gRPC-Web protocol translation and CORS support.
+  - HTTP/2 to gRPC-Web conversion
+  - Automatic CORS header management
+  - Load balancing and health checks
+- **Complete Docker Containerization**: Containerized all services for seamless deployment.
+  - Dockerfile for FMS Server (Java)
+  - Dockerfile for SNMP Trap Receiver
+  - Dockerfile for React UI (multi-stage build with Nginx)
+  - Dockerfile for Envoy Proxy
+  - docker-compose.yml for orchestration
+- **Automation Script**: Created `start-fms.sh` for one-command deployment of the entire system.
+  - Automated container building and starting
+  - SNMP trap generation for testing
+  - Automatic browser launch
+  - Service health verification
+- **AlarmClient.js**: gRPC-Web client library for React components to subscribe to alarm streams.
 
+### Changed
+- **README.md**: Completely revamped with Docker, UI, and gRPC-Web information.
+- **Architecture**: Evolved from CLI-only backend to full-stack system with web UI.
+  - Added Envoy proxy layer for gRPC-Web translation
+  - React UI as primary user interface
+  - Maintained backward compatibility with existing gRPC services
+
+### Fixed
+- **gRPC Stubs Generation**: Regenerated all gRPC and gRPC-Web stubs to match current proto definitions.
+- **CORS Configuration**: Fixed Envoy CORS settings for proper browser-based gRPC-Web connectivity.
+- **React Component Rendering**: Fixed CSS styling issues preventing alarm table display.
+  - Updated App.css to properly display table with correct layout
+  - Fixed header height issues that were hiding content
+- **Docker Port Mapping**: Corrected network configuration for host mode Docker containers.
+
+### Technical Details
+- **Frontend Stack**: React 18, JavaScript ES6+, CSS3, gRPC-Web protocol
+- **Backend Stack**: Java 17, Apache Ignite, Apache Kafka, gRPC
+- **Infrastructure**: Docker, Docker Compose, Envoy v1.28
+- **Build Tools**: Maven, npm, protoc with gRPC-Web plugin
+
+### Testing
+- End-to-end pipeline verified: SNMP → Kafka → Ignite → gRPC → Envoy → gRPC-Web → React UI
+- Tested with multiple SNMP traps and verified real-time UI updates
+- Verified alarm deduplication and tally counting in UI
+
+## [0.2.0] - 2025-10-14
 ### Added
 - **gRPC Alarm Service:** Implemented a new gRPC service (`AlarmService`) to query for alarms stored in the Ignite cache. The service supports streaming responses.
 - **Query Filtering:** The `AlarmService` supports filtering alarms by `deviceId`, `severity`, and `eventType`.
@@ -24,7 +73,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Event Deduplication:** Implemented and verified end-to-end event deduplication logic. The `DeduplicationCorrelator` now correctly identifies duplicate events based on a correlation key and updates a tally count in the `Alarm` object, rather than creating new alarms for each duplicate event.
 
 ## [0.1.0] - 2025-09-30
-
 ### Added
 - **Kafka Integration:** Implemented an event-driven pipeline using Apache Kafka for message bus communication.
 - **Ignite Cache:** Integrated Apache Ignite as a distributed cache (`fms-events-cache`) to store events consumed from Kafka.
