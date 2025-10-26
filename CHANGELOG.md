@@ -1,3 +1,26 @@
+## [1.1.0] - 2025-10-25
+### Added
+- **Extended Alarm Fields**: Added 5 new fields to alarm model:
+  - Node Alias: Network node identifier
+  - Probable Cause: Root cause analysis
+  - Alarm Group: Alarm categorization
+  - Summary: Alarm summary text
+  - IID: Ignite Internal ID (cache key)
+- **Horizontal Scrolling Table**: All 15 alarm columns now visible with smooth horizontal scrolling.
+- **Severity Level Mapping**: Severity converted to numeric levels (1=INFO, 2=WARNING, 3=CRITICAL).
+- **Smart Description Parsing**: Extracts readable message from SNMP OID data.
+- **Sticky Table Headers**: Headers remain visible while scrolling.
+
+### Changed
+- Updated proto definitions (FMS.proto) with new alarm fields
+- Enhanced Alarm.java model with new field definitions
+- Updated AlarmServiceImpl to map IID to cache key
+- Improved React table with 15 columns instead of 4
+- Enhanced App.css with scrolling and responsive design
+
+### Fixed
+- Description field now shows readable message instead of raw OID JSON
+- Severity field now shows numeric values (1, 2, 3) instead of text
 # Changelog
 All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),

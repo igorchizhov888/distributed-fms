@@ -87,6 +87,28 @@ Open http://localhost:3000 in your browser to see the alarms table update in rea
 | gRPC Server | localhost:50051 | Backend gRPC service (internal) |
 | Kafka | localhost:9092 | Message broker (internal) |
 
+## Alarm Fields
+
+The FMS displays the following alarm information in the real-time dashboard:
+
+| Field | Description |
+|-------|-------------|
+| Alarm ID | Unique identifier for the alarm |
+| Device ID | Source device that triggered the alarm |
+| Node Alias | Network node identifier |
+| Severity | Alarm severity level (1=INFO, 2=WARNING, 3=CRITICAL) |
+| Alarm Group | Category or group classification |
+| Probable Cause | Root cause analysis |
+| Summary | Brief alarm summary |
+| Description | Detailed alarm description |
+| Status | Current alarm status (ACTIVE, CLEARED, etc.) |
+| Event Type | Type of network event |
+| Geographic Region | Geographic location of source |
+| Tally Count | Number of duplicate occurrences |
+| First Occurrence | Timestamp of first occurrence |
+| Last Occurrence | Timestamp of most recent occurrence |
+| IID | Ignite Internal ID (cache key) |
+
 ## Stopping the System
 ```bash
 docker compose down
