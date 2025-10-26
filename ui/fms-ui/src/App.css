@@ -22,26 +22,40 @@
   min-height: calc(100vh - 100px);
 }
 
+.table-wrapper {
+  overflow-x: auto;
+  background-color: white;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  margin-top: 20px;
+}
+
 table {
   width: 100%;
+  min-width: 1200px;
   border-collapse: collapse;
   background-color: white;
-  margin-top: 20px;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 table th, table td {
   border: 1px solid #ddd;
   padding: 12px;
   text-align: left;
+  white-space: nowrap;
 }
 
 table th {
   background-color: #282c34;
   color: white;
   font-weight: bold;
+  position: sticky;
+  top: 0;
 }
 
 table tr:hover {
   background-color: #f9f9f9;
+}
+
+table td {
+  font-size: 13px;
 }

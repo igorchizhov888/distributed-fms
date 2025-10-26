@@ -501,7 +501,12 @@ proto.com.distributedFMS.AlarmMessage.toObject = function(includeInstance, msg) 
     status: jspb.Message.getFieldWithDefault(msg, 8, ""),
     tallyCount: jspb.Message.getFieldWithDefault(msg, 9, 0),
     firstOccurrence: jspb.Message.getFieldWithDefault(msg, 10, 0),
-    lastOccurrence: jspb.Message.getFieldWithDefault(msg, 11, 0)
+    lastOccurrence: jspb.Message.getFieldWithDefault(msg, 11, 0),
+    nodeAlias: jspb.Message.getFieldWithDefault(msg, 12, ""),
+    probableCause: jspb.Message.getFieldWithDefault(msg, 13, ""),
+    alarmGroup: jspb.Message.getFieldWithDefault(msg, 14, ""),
+    summary: jspb.Message.getFieldWithDefault(msg, 15, ""),
+    iid: jspb.Message.getFieldWithDefault(msg, 16, "")
   };
 
   if (includeInstance) {
@@ -581,6 +586,26 @@ proto.com.distributedFMS.AlarmMessage.deserializeBinaryFromReader = function(msg
     case 11:
       var value = /** @type {number} */ (reader.readInt64());
       msg.setLastOccurrence(value);
+      break;
+    case 12:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setNodeAlias(value);
+      break;
+    case 13:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setProbableCause(value);
+      break;
+    case 14:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setAlarmGroup(value);
+      break;
+    case 15:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setSummary(value);
+      break;
+    case 16:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setIid(value);
       break;
     default:
       reader.skipField();
@@ -685,6 +710,41 @@ proto.com.distributedFMS.AlarmMessage.serializeBinaryToWriter = function(message
   if (f !== 0) {
     writer.writeInt64(
       11,
+      f
+    );
+  }
+  f = message.getNodeAlias();
+  if (f.length > 0) {
+    writer.writeString(
+      12,
+      f
+    );
+  }
+  f = message.getProbableCause();
+  if (f.length > 0) {
+    writer.writeString(
+      13,
+      f
+    );
+  }
+  f = message.getAlarmGroup();
+  if (f.length > 0) {
+    writer.writeString(
+      14,
+      f
+    );
+  }
+  f = message.getSummary();
+  if (f.length > 0) {
+    writer.writeString(
+      15,
+      f
+    );
+  }
+  f = message.getIid();
+  if (f.length > 0) {
+    writer.writeString(
+      16,
       f
     );
   }
@@ -886,6 +946,96 @@ proto.com.distributedFMS.AlarmMessage.prototype.getLastOccurrence = function() {
  */
 proto.com.distributedFMS.AlarmMessage.prototype.setLastOccurrence = function(value) {
   return jspb.Message.setProto3IntField(this, 11, value);
+};
+
+
+/**
+ * optional string node_alias = 12;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getNodeAlias = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 12, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setNodeAlias = function(value) {
+  return jspb.Message.setProto3StringField(this, 12, value);
+};
+
+
+/**
+ * optional string probable_cause = 13;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getProbableCause = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 13, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setProbableCause = function(value) {
+  return jspb.Message.setProto3StringField(this, 13, value);
+};
+
+
+/**
+ * optional string alarm_group = 14;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getAlarmGroup = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 14, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setAlarmGroup = function(value) {
+  return jspb.Message.setProto3StringField(this, 14, value);
+};
+
+
+/**
+ * optional string summary = 15;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getSummary = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 15, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setSummary = function(value) {
+  return jspb.Message.setProto3StringField(this, 15, value);
+};
+
+
+/**
+ * optional string iid = 16;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getIid = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 16, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setIid = function(value) {
+  return jspb.Message.setProto3StringField(this, 16, value);
 };
 
 

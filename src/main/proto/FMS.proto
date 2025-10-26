@@ -1,17 +1,13 @@
 syntax = "proto3";
-
 package com.distributedFMS;
-
 option java_multiple_files = true;
 option java_package = "com.distributedFMS.grpc";
 option java_outer_classname = "FMSProto";
-
 // The FMS service definition.
 service ManagementService {
   // Submits an event to the FMS.
   rpc SubmitEvent (SubmitEventRequest) returns (SubmitEventResponse) {}
 }
-
 // The request message containing the event details.
 message SubmitEventRequest {
   string event_type = 1;
@@ -19,24 +15,21 @@ message SubmitEventRequest {
   int64 event_time = 3;
   string description = 4;
 }
-
 // The response message containing the event ID.
 message SubmitEventResponse {
   string event_id = 1;
 }
-
 // The Alarm Query service definition.
 service AlarmService {
   // Queries for alarms, with optional filtering.
   rpc QueryAlarms (QueryAlarmsRequest) returns (stream AlarmMessage) {}
 }
-
 // Mirrors the Alarm.java model
 message AlarmMessage {
   string alarm_id = 1;
   int64 timestamp = 2;
   string device_id = 3;
-  string severity = 4; // Using string for enum representation
+  string severity = 4; // Using string for enum representation (1, 2, or 3)
   string event_type = 5;
   string description = 6;
   string geographic_region = 7;
@@ -44,8 +37,12 @@ message AlarmMessage {
   int32 tally_count = 9;
   int64 first_occurrence = 10;
   int64 last_occurrence = 11;
+  string node_alias = 12; // Node identifier/alias
+  string probable_cause = 13; // Root cause of the alarm
+  string alarm_group = 14; // Alarm category/group
+  string summary = 15; // Brief summary of the alarm
+  string iid = 16; // Ignite ID (internal cache key)
 }
-
 // Request message for querying alarms.
 // All fields are optional; if a field is omitted, it is not used for filtering.
 message QueryAlarmsRequest {
