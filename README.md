@@ -8,6 +8,7 @@ Traditional centralized fault management systems cannot handle modern network ev
 - **Event-Driven Architecture**: Ingests events via an Apache Kafka message bus.
 - **Geographic Distribution**: Process events at network edge locations using custom affinity functions in Apache Ignite.
 - **Real-time Processing**: Handle thousands of events per second per node with sub-millisecond response times.
+- **Real-time Alarm Correlation**: Automatically groups related alarms into parent/child relationships with root cause identification.
 - **Distributed Caching**: Events are consumed and stored in a distributed Apache Ignite cache.
 - **Active-Active Clustering**: Automatic failover with zero data loss across distributed nodes (feature of Ignite).
 - **Universal Network Support**: Monitor any network type by adding appropriate software adapters.
@@ -105,6 +106,8 @@ The FMS displays the following alarm information in the real-time dashboard:
 | Event Type | Type of network event |
 | Geographic Region | Geographic location of source |
 | Tally Count | Number of duplicate occurrences |
+| Correlation ID | ID linking all alarms in a correlation group |
+| Root Cause ID | The `alarmId` of the parent (root cause) alarm in a group |
 | First Occurrence | Timestamp of first occurrence |
 | Last Occurrence | Timestamp of most recent occurrence |
 | IID | Ignite Internal ID (cache key) |

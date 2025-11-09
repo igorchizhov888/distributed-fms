@@ -1,3 +1,26 @@
+## [1.2.0] - 2025-11-09
+### Added
+- **Alarm Correlation Engine**: Implemented a sophisticated correlation engine to group related alarms.
+  - Automatically creates parent-child relationships between alarms based on time and attribute rules.
+  - Identifies a "root cause" alarm for each correlated group.
+- **Correlation Fields**: Added `correlation_id` and `root_cause_alarm_id` to the alarm model (`FMS.proto`, `Alarm.java`) to track relationships.
+- **Parent/Child UI Grouping**: The React UI now groups alarms by `correlationId`.
+  - Parent alarms are highlighted and display a toggle (▶/▼) to show/hide children.
+  - Child alarms are nested visually under their parent.
+  - A badge indicates the number of child alarms in a group.
+- **New UI Columns**: Added "Correlation ID" and "Root Cause ID" columns to the UI table.
+
+### Changed
+- **UI Logic**: `App.js` was completely refactored to handle the new grouping, expand/collapse state, and rendering logic.
+- **Deduplication Logic**: `DeduplicationCorrelator` now uses the `alarm.getAlarmId()` as the cache key to prevent stale data issues.
+- **Correlation Engine**: The engine was updated to ensure all alarms within a correlation group (including the first one) are correctly updated in the cache with the proper IDs.
+- **Styling**: `App.css` was updated to provide distinct visual styles for parent, child, and standalone alarms.
+
+### Fixed
+- **Critical Bug: First Alarm Missing IDs**: Fixed a race condition where the first alarm in a sequence would not receive its correlation IDs. All alarms in a group are now correctly updated.
+- **Tally Count Initialization**: The `tallyCount` in `Alarm.java` is now correctly initialized to `1` on creation.
+- **Deduplication Return Value**: `DeduplicationCorrelator.deduplicate()` now correctly returns the processed alarm, ensuring the correlation engine receives the most up-to-date data.
+
 ## [1.1.0] - 2025-10-25
 ### Added
 - **Extended Alarm Fields**: Added 5 new fields to alarm model:
