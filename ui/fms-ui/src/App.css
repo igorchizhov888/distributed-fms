@@ -59,3 +59,42 @@ table tr:hover {
 table td {
   font-size: 13px;
 }
+
+/* Parent/Child Alarm Styling */
+.parent-alarm {
+  background-color: #f0f8ff;
+  font-weight: bold;
+  border-left: 4px solid #2196F3;
+}
+
+.child-alarm {
+  background-color: #f9f9f9;
+  border-left: 4px solid #ccc;
+}
+
+.child-alarm td:nth-child(2) {
+  padding-left: 30px !important;
+}
+
+.standalone-alarm {
+  background-color: white;
+}
+
+.expand-btn {
+  background-color: #2196F3;
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  cursor: pointer;
+  border-radius: 4px;
+  font-size: 12px;
+}
+
+.expand-btn:hover {
+  background-color: #1976D2;
+}
+
+/* Make parent descriptions bold */
+.parent-alarm td:nth-child(9) {
+  font-weight: bold;
+}

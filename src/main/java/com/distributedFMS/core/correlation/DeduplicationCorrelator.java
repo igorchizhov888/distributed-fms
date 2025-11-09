@@ -27,20 +27,23 @@ public class DeduplicationCorrelator {
      * Criteria: Node (sourceDevice), AlertGroup (eventType), AlertKey (description hash)
      * Action: Increment tally and update last occurrence timestamp
      */
-    public void deduplicate(Alarm alarm) {
+    public Alarm deduplicate(Alarm alarm) {
         String key = generateCorrelationKey(alarm);
         logger.info("DeduplicationCorrelator: Processing alarm with key: " + key);
+
         // Attempt to retrieve an existing alarm with the same key
         Alarm existingAlarm = this.alarmCache.get(key);
 
         if (existingAlarm != null) {
             logger.info("DeduplicationCorrelator: Found existing alarm with key: " + key);
             int oldTally = existingAlarm.getTallyCount();
+
             // If an alarm with the same key exists, update the tally and last occurrence time
             existingAlarm.setTallyCount(oldTally + 1);
             existingAlarm.setLastOccurrence(System.currentTimeMillis());
-            this.alarmCache.put(key, existingAlarm); // Update the existing alarm in the cache
+            this.alarmCache.put(key, existingAlarm);
             logger.info("DeduplicationCorrelator: Updated existing alarm: " + key + ". Tally incremented from " + oldTally + " to " + existingAlarm.getTallyCount());
+            return existingAlarm;
         } else {
             // If no such alarm exists, create a new one
             logger.info("DeduplicationCorrelator: No existing alarm found, creating new alarm with key: " + key);
@@ -48,6 +51,7 @@ public class DeduplicationCorrelator {
             alarm.setLastOccurrence(System.currentTimeMillis());
             alarm.setTallyCount(1);
             this.alarmCache.put(key, alarm);
+            return alarm;
         }
     }
 

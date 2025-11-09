@@ -11,6 +11,8 @@ import org.apache.ignite.configuration.DataStorageConfiguration;
 import org.apache.ignite.configuration.IgniteConfiguration;
 import org.apache.ignite.spi.discovery.tcp.TcpDiscoverySpi;
 import org.apache.ignite.spi.discovery.tcp.ipfinder.vm.TcpDiscoveryVmIpFinder;
+import com.distributedFMS.correlation.model.CorrelatedAlarm;
+import com.distributedFMS.correlation.config.CorrelationConfig;
 
 import java.util.Arrays;
 
@@ -64,7 +66,11 @@ public class FMSIgniteConfig {
         cfg.setDataStorageConfiguration(storageCfg);
 
         // Cache Configuration
-        cfg.setCacheConfiguration(createAlarmCacheConfig());
+        
+        cfg.setCacheConfiguration(
+            createAlarmCacheConfig(),
+            CorrelationConfig.correlatedAlarmsCacheConfig()
+        );
 
         return cfg;
     }

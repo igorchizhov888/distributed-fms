@@ -1,5 +1,5 @@
 # Dockerfile for the FMS Server
-FROM openjdk:17-jdk-slim
+FROM eclipse-temurin:17-jdk
 
 # Accept a build-time argument for the application version
 ARG APP_VERSION=0.1.0-SNAPSHOT

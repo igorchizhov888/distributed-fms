@@ -15,6 +15,8 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import com.distributedFMS.correlation.engine.CorrelationEngine;
+import com.distributedFMS.correlation.config.CorrelationConfig;
 
 import java.time.Duration;
 import java.util.Collections;
@@ -34,6 +36,7 @@ public class EventConsumer implements Runnable {
     private final Ignite ignite;
     private final Gson gson = new Gson();
     private final DeduplicationCorrelator deduplicationCorrelator;
+    private final CorrelationEngine correlationEngine;
     private final CountDownLatch readyLatch = new CountDownLatch(1);
 
     public EventConsumer(Ignite ignite) {
@@ -44,6 +47,14 @@ public class EventConsumer implements Runnable {
         this.ignite = ignite;
         ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName()).getConfiguration(CacheConfiguration.class).setIndexedTypes(String.class, Alarm.class);
         this.deduplicationCorrelator = new DeduplicationCorrelator(ignite, FMSIgniteConfig.getAlarmsCacheName());
+        this.correlationEngine = new CorrelationEngine(
+            ignite,
+            FMSIgniteConfig.getAlarmsCacheName(),
+            CorrelationConfig.getCorrelatedAlarmsCacheName(),
+            60000,  // 60 second time window
+            100     // Max 100 alarms per correlation
+        );
+        logger.info("Correlation engine initialized");
         Properties props = new Properties();
         props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "fms-core-group");
@@ -96,7 +107,14 @@ public class EventConsumer implements Runnable {
                     );
 
                     // Process the alarm through the deduplication correlator
-                    deduplicationCorrelator.deduplicate(alarm);
+                    Alarm processedAlarm = deduplicationCorrelator.deduplicate(alarm);
+                    
+                    // Trigger correlation (async, non-blocking)
+                    correlationEngine.correlateAsync(processedAlarm)
+                        .exceptionally(ex -> {
+                            logger.warning("Correlation failed for alarm " + processedAlarm.getAlarmId() + ": " + ex.getMessage());
+                            return null;
+                        });
                 }
             }
         } finally {

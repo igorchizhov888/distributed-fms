@@ -42,6 +42,8 @@ message AlarmMessage {
   string alarm_group = 14; // Alarm category/group
   string summary = 15; // Brief summary of the alarm
   string iid = 16; // Ignite ID (internal cache key)
+  string correlation_id = 17; // Correlation group ID
+  string root_cause_alarm_id = 18; // Root cause alarm ID in this correlation
 }
 // Request message for querying alarms.
 // All fields are optional; if a field is omitted, it is not used for filtering.

@@ -39,6 +39,9 @@ public class Alarm implements Serializable {
     private String correlationId;
 
     @QuerySqlField
+    private String rootCauseAlarmId;
+
+    @QuerySqlField
     private int tallyCount;
 
     @QuerySqlField
@@ -49,13 +52,14 @@ public class Alarm implements Serializable {
 
     @QuerySqlField
     private long lastOccurrence;
-    
     public Alarm() {
         this.alarmId = UUID.randomUUID().toString();
         this.timestamp = Instant.now().toEpochMilli();
         this.status = AlarmStatus.ACTIVE;
+        this.tallyCount = 1;  // ADD THIS LINE if not already there
     }
     
+        
     public Alarm(String deviceId, String severity, String eventType, 
                  String description, String geographicRegion) {
         this();
@@ -92,6 +96,9 @@ public class Alarm implements Serializable {
     
     public String getCorrelationId() { return correlationId; }
     public void setCorrelationId(String correlationId) { this.correlationId = correlationId; }
+
+    public String getRootCauseAlarmId() { return rootCauseAlarmId; }
+    public void setRootCauseAlarmId(String rootCauseAlarmId) { this.rootCauseAlarmId = rootCauseAlarmId; }
 
     public int getTallyCount() { return tallyCount; }
     public void setTallyCount(int tallyCount) { this.tallyCount = tallyCount; }

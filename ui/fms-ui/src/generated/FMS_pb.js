@@ -506,7 +506,9 @@ proto.com.distributedFMS.AlarmMessage.toObject = function(includeInstance, msg) 
     probableCause: jspb.Message.getFieldWithDefault(msg, 13, ""),
     alarmGroup: jspb.Message.getFieldWithDefault(msg, 14, ""),
     summary: jspb.Message.getFieldWithDefault(msg, 15, ""),
-    iid: jspb.Message.getFieldWithDefault(msg, 16, "")
+    iid: jspb.Message.getFieldWithDefault(msg, 16, ""),
+    correlationId: jspb.Message.getFieldWithDefault(msg, 17, ""),
+    rootCauseAlarmId: jspb.Message.getFieldWithDefault(msg, 18, "")
   };
 
   if (includeInstance) {
@@ -606,6 +608,14 @@ proto.com.distributedFMS.AlarmMessage.deserializeBinaryFromReader = function(msg
     case 16:
       var value = /** @type {string} */ (reader.readString());
       msg.setIid(value);
+      break;
+    case 17:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setCorrelationId(value);
+      break;
+    case 18:
+      var value = /** @type {string} */ (reader.readString());
+      msg.setRootCauseAlarmId(value);
       break;
     default:
       reader.skipField();
@@ -745,6 +755,20 @@ proto.com.distributedFMS.AlarmMessage.serializeBinaryToWriter = function(message
   if (f.length > 0) {
     writer.writeString(
       16,
+      f
+    );
+  }
+  f = message.getCorrelationId();
+  if (f.length > 0) {
+    writer.writeString(
+      17,
+      f
+    );
+  }
+  f = message.getRootCauseAlarmId();
+  if (f.length > 0) {
+    writer.writeString(
+      18,
       f
     );
   }
@@ -1036,6 +1060,42 @@ proto.com.distributedFMS.AlarmMessage.prototype.getIid = function() {
  */
 proto.com.distributedFMS.AlarmMessage.prototype.setIid = function(value) {
   return jspb.Message.setProto3StringField(this, 16, value);
+};
+
+
+/**
+ * optional string correlation_id = 17;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getCorrelationId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 17, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setCorrelationId = function(value) {
+  return jspb.Message.setProto3StringField(this, 17, value);
+};
+
+
+/**
+ * optional string root_cause_alarm_id = 18;
+ * @return {string}
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.getRootCauseAlarmId = function() {
+  return /** @type {string} */ (jspb.Message.getFieldWithDefault(this, 18, ""));
+};
+
+
+/**
+ * @param {string} value
+ * @return {!proto.com.distributedFMS.AlarmMessage} returns this
+ */
+proto.com.distributedFMS.AlarmMessage.prototype.setRootCauseAlarmId = function(value) {
+  return jspb.Message.setProto3StringField(this, 18, value);
 };
 
 
