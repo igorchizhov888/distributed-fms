@@ -1,0 +1,79 @@
+Architecture v1.1.0 - Multi-Protocol Adapter Support
+=====================================================
+
+PROTOCOL SOURCES (Multiple Adapters):
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│  SNMP Network    │  │  5G EMS / Device │  │  Future Protocol │
+│  Devices         │  │  (gNMI Stream)   │  │  Adapters        │
+└────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
+         │                     │                     │
+         v                     v                     v
+┌──────────────────┐  ┌──────────────────┐  ┌──────────────────┐
+│SnmpTrapReceiver  │  │  gNMIAdapter     │  │  [Adapter-N]     │
+│  (Port 10162)    │  │  (Port 9830)     │  │  (Port XXXX)     │
+└────────┬─────────┘  └────────┬─────────┘  └────────┬─────────┘
+         │                     │                     │
+         └─────────────────────┼─────────────────────┘
+                               v
+                    ┌──────────────────────┐
+                    │   Kafka Topic        │
+                    │   'fms-events'       │
+                    │ (Unified Event Bus)  │
+                    └──────────┬───────────┘
+                               │
+                               v
+                    ┌──────────────────────┐
+                    │  EventConsumer       │
+                    │  (Kafka Consumer)    │
+                    └──────────┬───────────┘
+                               │
+                               v
+         ┌─────────────────────────────────────────┐
+         │  Distributed Processing Layer           │
+         ├─────────────────────────────────────────┤
+         │ • Deduplication                         │
+         │ • Alarm Correlation                     │
+         │ • Root Cause Analysis                   │
+         │ • Geographic Distribution (Ignite)     │
+         └──────────┬────────────────────────────┘
+                    │
+                    v
+         ┌──────────────────────┐
+         │  Ignite Cluster      │
+         │  (Distributed Cache) │
+         │  fms-alarms-cache    │
+         └──────────┬───────────┘
+                    │
+         ┌──────────┴───────────┐
+         │                      │
+         v                      v
+   ┌──────────────┐    ┌──────────────────┐
+   │ gRPC Stream  │    │  Real-time UI    │
+   │ (Continuous  │    │  Updates via     │
+   │  Updates)    │    │  gRPC-Web        │
+   └──────┬───────┘    └──────────────────┘
+          │
+          v
+   ┌──────────────────┐
+   │  Envoy Proxy     │
+   │  (gRPC-Web)      │
+   └──────────┬───────┘
+              │
+              v
+   ┌──────────────────┐
+   │  React UI        │
+   │  (Browser)       │
+   └──────────────────┘
+
+EVENT FLOW (Multi-Protocol):
+1. Multiple sources → Adapters (SNMP, gNMI, Future)
+2. Adapters → Kafka (unified bus)
+3. EventConsumer → Ignite (distributed processing)
+4. Correlation Engine → Parent/Child grouping
+5. Ignite Cache → Real-time subscriptions
+6. gRPC-Web → Browser UI
+
+SCALABILITY:
+- Horizontal: Add more Ignite nodes
+- Protocol: Add new adapters without changing core
+- Throughput: Thousands of events/sec per adapter

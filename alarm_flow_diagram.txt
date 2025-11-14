@@ -1,54 +1,168 @@
-```
-+-----------------+
-|   SNMP Trap     |
-+-----------------+
-        |
-        v
-+--------------------+
-|  SnmpTrapReceiver  |
-|    (Java App)      |
-+--------------------+
-        |
-        v
-+-----------------+
-|   Kafka Topic   |
-|   (fms-events)  |
-+-----------------+
-        |
-        v
-+-----------------+
-|  EventConsumer  |
-|    (Java App)   |
-+-----------------+
-        |
-        v
-+-----------------+
-| Deduplicator /  |
-|  Alarm Service  |
-|   (Java App)    |
-+-----------------+
-        |
-        v
-+-----------------+
-|  Ignite Cache   |
-|(fms-alarms-cache)|
-+-----------------+
-        |
-        v
-+-----------------+
-|   gRPC Stream   |
-+-----------------+
-        |
-        v
-+-----------------+
-|   Envoy Proxy   |
-|    (Docker)     |
-+-----------------+
-        |
-        v
-+-----------------+
-|       UI        |
-| (React Browser) |
-+-----------------+
+ALARM FLOW DIAGRAM v1.1.0 - Multi-Protocol Scalable Architecture
+=================================================================
 
-```
+┌─────────────────────────────────────────────────────────────────┐
+│                    PROTOCOL SOURCES (Pluggable)                 │
+├─────────────────────────────────────────────────────────────────┤
+│                                                                 │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
+│  │ Source 1:    │  │ Source 2:    │  │ Source N:    │          │
+│  │ SNMP Devices │  │ 5G EMS/RIC   │  │ Future       │          │
+│  │              │  │ (gNMI)       │  │ Protocol     │          │
+│  └────────┬─────┘  └────────┬─────┘  └────────┬─────┘          │
+│           │                 │                 │                 │
+│           v                 v                 v                 │
+│  ┌──────────────────────────────────────────────────────────┐  │
+│  │           ADAPTER LAYER (Java/Language-Agnostic)         │  │
+│  ├──────────────────────────────────────────────────────────┤  │
+│  │                                                          │  │
+│  │ ┌────────────────┐ ┌────────────────┐ ┌─────────────┐  │  │
+│  │ │SnmpTrapAdapter │ │ gNMIAdapter    │ │ Adapter-N   │  │  │
+│  │ │ UDP:10162      │ │ Port:9830      │ │ Port:XXXX   │  │  │
+│  │ │ Throughput:    │ │ Throughput:    │ │ Throughput: │  │  │
+│  │ │ 100s/sec       │ │ 1000s+/sec     │ │ TBD         │  │  │
+│  │ │                │ │                │ │             │  │  │
+│  │ │ Parse → JSON   │ │ Parse → JSON   │ │ Parse →JSON │  │  │
+│  │ └────────┬───────┘ └────────┬───────┘ └────────┬────┘  │  │
+│  │          │                  │                  │       │  │
+│  └──────────┼──────────────────┼──────────────────┼───────┘  │
+│             │                  │                  │           │
+└─────────────┼──────────────────┼──────────────────┼───────────┘
+              │                  │                  │
+              └──────────────────┼──────────────────┘
+                                 │
+                                 v
+                    ┌─────────────────────────┐
+                    │   Kafka Topic           │
+                    │   'fms-events'          │
+                    │  (Unified Event Bus)    │
+                    │                         │
+                    │ Schema: Normalized JSON │
+                    │ {                       │
+                    │   source: "snmp|gnmi|.."│
+                    │   alarm_id: "...",      │
+                    │   severity: "...",      │
+                    │   timestamp: "...",     │
+                    │   ...                   │
+                    │ }                       │
+                    └────────────┬────────────┘
+                                 │
+                                 v
+                    ┌─────────────────────────┐
+                    │  EventConsumer          │
+                    │  • Kafka Consumer       │
+                    │  • Parse JSON payload   │
+                    │  • Enrich metadata      │
+                    │  • Normalize format     │
+                    └────────────┬────────────┘
+                                 │
+                                 v
+                    ┌─────────────────────────┐
+                    │  Deduplicator           │
+                    │  • Check alarm ID       │
+                    │  • Increment tally      │
+                    │  • Update timestamp     │
+                    └────────────┬────────────┘
+                                 │
+                                 v
+                    ┌─────────────────────────┐
+                    │  Correlation Engine     │
+                    │  • Match related alarms │
+                    │  • Root cause analysis  │
+                    │  • Confidence scoring   │
+                    │  • Parent/child group   │
+                    └────────────┬────────────┘
+                                 │
+                                 v
+              ┌──────────────────────────────────┐
+              │  Ignite Distributed Cache        │
+              │  (Geo-Distributed Cluster)       │
+              │  fms-alarms-cache                │
+              │                                  │
+              │  • Real-time updates             │
+              │  • Continuous subscriptions      │
+              │  • Parent/child relationships    │
+              │  • Cross-protocol correlation    │
+              └──────────────┬───────────────────┘
+                             │
+          ┌──────────────────┼──────────────────┐
+          │                  │                  │
+          v                  v                  v
+    ┌──────────────┐  ┌──────────────┐  ┌──────────────┐
+    │ gRPC Stream  │  │ Ignite SQL   │  │ Analytics /  │
+    │ Service      │  │ Queries      │  │ ML Pipeline  │
+    │              │  │              │  │ (Future)     │
+    └────────┬─────┘  └──────────────┘  └──────────────┘
+             │
+             v
+    ┌─────────────────────────┐
+    │  Envoy Proxy            │
+    │  gRPC-Web Bridge        │
+    │  Port: 8080             │
+    └────────────┬────────────┘
+                 │
+                 v
+    ┌─────────────────────────┐
+    │  React UI (Browser)     │
+    │                         │
+    │  ✓ Alarm Table          │
+    │  ✓ Parent/Child View    │
+    │  ✓ Correlation ID       │
+    │  ✓ Root Cause ID        │
+    │  ✓ Tally Count          │
+    │  ✓ Geographic Region    │
+    │  ✓ Source Protocol      │
+    │  ✓ Confidence Score     │
+    └─────────────────────────┘
+
+
+MULTI-SOURCE SCALABILITY PATTERN:
+═════════════════════════════════
+
+Adding New Protocol (e.g., RESTCONF, AMQP, etc.):
+
+1. Create new Adapter class:
+   └─ src/main/java/com/distributedFMS/adapter/RestconfAdapter.java
+
+2. Implement standard interface:
+   └─ AlarmAdapter {
+        listen()
+        parse()
+        normalize()
+        publishToKafka()
+      }
+
+3. Deploy as Docker container:
+   └─ docker-compose.yml: add new service
+
+4. Kafka topic still receives normalized JSON:
+   └─ No changes to EventConsumer/Correlation
+
+5. All sources automatically correlate:
+   └─ Same deduplication logic
+   └─ Same correlation rules
+   └─ Same parent/child grouping
+
+
+LATENCY BREAKDOWN (Per Adapter):
+════════════════════════════════
+
+SNMP Path (100s/sec):
+  Source → Adapter:          ~1-5ms
+  Adapter → Kafka:           ~2-10ms
+  Kafka → Consumer:          ~5-20ms
+  Dedup + Correlation:       ~6-52ms
+  Ignite Update:             ~2-5ms
+  Total E2E:                 ~16-92ms
+
+gNMI Path (1000s+/sec):
+  Source → Adapter:          ~1-5ms
+  Adapter → Kafka:           ~2-10ms (batched)
+  Kafka → Consumer:          ~5-20ms (batched)
+  Dedup + Correlation:       ~6-52ms
+  Ignite Update:             ~2-5ms
+  Total E2E:                 ~16-92ms
+
+Future Protocol-N:
+  [Adapter specific]         ~TBD
+
