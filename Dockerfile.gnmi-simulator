@@ -1,0 +1,14 @@
+# Dockerfile for the Mock gNMI Simulator
+FROM eclipse-temurin:17-jdk
+
+# Accept a build-time argument for the application version
+ARG APP_VERSION=0.1.0-SNAPSHOT
+
+# Set the working directory
+WORKDIR /app
+
+# Copy the application JAR
+COPY target/distributed-fms-${APP_VERSION}.jar fms-app.jar
+
+# Command to run the mock gNMI simulator
+CMD ["java", "-cp", "fms-app.jar", "com.distributedFMS.simulation.MockGnmiSimulator"]

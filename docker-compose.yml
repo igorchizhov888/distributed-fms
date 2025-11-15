@@ -59,6 +59,19 @@ services:
     depends_on:
       - kafka
 
+  gnmi-simulator:
+    build:
+      context: .
+      dockerfile: Dockerfile.gnmi-simulator
+      args:
+        - APP_VERSION=${APP_VERSION}
+    container_name: gnmi-simulator
+    networks:
+      - fms-net
+    depends_on:
+      - kafka
+    command: sh -c "sleep 5 && java -cp fms-app.jar com.distributedFMS.simulation.MockGnmiSimulator"
+
   envoy:
     build:
       context: .
