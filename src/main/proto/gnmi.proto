@@ -1,0 +1,187 @@
+syntax = "proto3";
+
+package com.distributedFMS.gnmi;
+
+option java_multiple_files = true;
+option java_package = "com.distributedFMS.gnmi";
+option java_outer_classname = "GnmiProto";
+
+import "google/protobuf/any.proto";
+
+// gNMI service for FMS - Network Management Interface
+service gNMI {
+  // Capabilities returns the supported models and encoding by the target
+  rpc Capabilities(CapabilityRequest) returns (CapabilityResponse);
+  
+  // Get returns a snapshot of data from the target
+  rpc Get(GetRequest) returns (GetResponse);
+  
+  // Set modifies state on the target
+  rpc Set(SetRequest) returns (SetResponse);
+  
+  // Subscribe allows streaming of telemetry data
+  rpc Subscribe(stream SubscribeRequest) returns (stream SubscribeResponse);
+}
+
+// Path represents a data tree path
+message Path {
+  string origin = 1;           // Origin/namespace (e.g., "fms", "openconfig")
+  string target = 2;           // Target device name
+  repeated PathElem elem = 3;  // Path elements
+}
+
+// PathElem represents a single element in a path
+message PathElem {
+  string name = 1;              // Element name
+  map<string, string> key = 2;  // Key-value pairs for indices
+}
+
+// TypedValue represents a value with type information
+message TypedValue {
+  oneof value {
+    string string_val = 1;
+    int64 int_val = 2;
+    uint64 uint_val = 3;
+    bool bool_val = 4;
+    bytes bytes_val = 5;
+    double double_val = 6;
+    bytes json_val = 7;         // JSON-encoded value
+    bytes proto_bytes = 8;      // Protobuf-encoded value
+  }
+}
+
+// Update represents a path-value pair
+message Update {
+  Path path = 1;
+  TypedValue val = 2;
+  uint32 duplicates = 3;
+}
+
+// Notification carries data from target to client
+message Notification {
+  int64 timestamp = 1;         // Timestamp in nanoseconds
+  Path prefix = 2;             // Prefix for paths
+  repeated Update update = 3;  // Updated values
+  repeated Path delete = 4;    // Deleted paths
+  bool atomic = 5;             // Whether updates are atomic
+}
+
+// Subscription modes
+enum SubscriptionMode {
+  TARGET_DEFINED = 0;
+  ON_CHANGE = 1;
+  SAMPLE = 2;
+}
+
+// Subscription represents a single subscription request
+message Subscription {
+  Path path = 1;
+  SubscriptionMode mode = 2;
+  uint64 sample_interval = 3;  // nanoseconds
+  bool suppress_redundant = 4;
+  uint64 heartbeat_interval = 5;
+}
+
+// SubscriptionList contains multiple subscriptions
+message SubscriptionList {
+  Path prefix = 1;
+  repeated Subscription subscription = 2;
+  enum Mode {
+    STREAM = 0;
+    ONCE = 1;
+    POLL = 2;
+  }
+  Mode mode = 3;
+  Encoding encoding = 4;
+  repeated ModelData use_models = 5;
+}
+
+// SubscribeRequest from client
+message SubscribeRequest {
+  oneof request {
+    SubscriptionList subscribe = 1;
+    Poll poll = 2;
+  }
+}
+
+// Poll triggers a polled update
+message Poll {}
+
+// SubscribeResponse from target
+message SubscribeResponse {
+  oneof response {
+    Notification update = 1;
+    bool sync_response = 2;
+  }
+}
+
+// Get request
+message GetRequest {
+  Path prefix = 1;
+  repeated Path path = 2;
+  enum DataType {
+    ALL = 0;
+    CONFIG = 1;
+    STATE = 2;
+    OPERATIONAL = 3;
+  }
+  DataType type = 3;
+  Encoding encoding = 4;
+  repeated ModelData use_models = 5;
+}
+
+// Get response
+message GetResponse {
+  repeated Notification notification = 1;
+}
+
+// Set request
+message SetRequest {
+  Path prefix = 1;
+  repeated Path delete = 2;
+  repeated Update replace = 3;
+  repeated Update update = 4;
+}
+
+// Set response
+message SetResponse {
+  Path prefix = 1;
+  repeated UpdateResult response = 2;
+  int64 timestamp = 3;
+}
+
+// UpdateResult for Set operations
+message UpdateResult {
+  enum Operation {
+    INVALID = 0;
+    DELETE = 1;
+    REPLACE = 2;
+    UPDATE = 3;
+  }
+  Path path = 1;
+  Operation op = 2;
+}
+
+// Encoding types
+enum Encoding {
+  JSON = 0;
+  BYTES = 1;
+  PROTO = 2;
+}
+
+// Capability request
+message CapabilityRequest {}
+
+// Capability response
+message CapabilityResponse {
+  repeated ModelData supported_models = 1;
+  repeated Encoding supported_encodings = 2;
+  string gNMI_version = 3;
+}
+
+// ModelData describes a schema model
+message ModelData {
+  string name = 1;
+  string organization = 2;
+  string version = 3;
+}

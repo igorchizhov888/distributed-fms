@@ -1,74 +1,125 @@
 package com.distributedFMS.core.correlation;
 
-import com.distributedFMS.core.config.FMSIgniteConfig;
 import com.distributedFMS.core.model.Alarm;
-import com.distributedFMS.core.model.AlarmStatus;
 import org.apache.ignite.Ignite;
 import org.apache.ignite.IgniteCache;
-import org.apache.ignite.cache.query.SqlQuery;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import javax.cache.Cache;
-import java.time.Instant;
-import java.util.logging.Logger;
+import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Deduplication correlator that tracks alarms and increments tally count
+ * for duplicate alarms based on their ID.
+ */
 public class DeduplicationCorrelator {
-
-    private static final Logger logger = Logger.getLogger(DeduplicationCorrelator.class.getName());
+    private static final Logger logger = LoggerFactory.getLogger(DeduplicationCorrelator.class);
+    
     private final Ignite ignite;
-    private final IgniteCache<String, Alarm> alarmCache;
+    private IgniteCache<String, Alarm> deduplicationCache;
+    private final ConcurrentHashMap<String, Integer> localTallyMap;
 
-    public DeduplicationCorrelator(Ignite ignite, String cacheName) {
+    public DeduplicationCorrelator(Ignite ignite) {
+        logger.info("=== Initializing DeduplicationCorrelator ===");
         this.ignite = ignite;
-        this.alarmCache = ignite.cache(cacheName);
+        this.localTallyMap = new ConcurrentHashMap<>();
+        
+        try {
+            // Use a separate cache for deduplication tracking
+            this.deduplicationCache = ignite.getOrCreateCache("deduplication");
+            logger.info("Successfully initialized deduplication cache");
+        } catch (Exception e) {
+            logger.error("CRITICAL: Failed to initialize deduplication cache", e);
+            throw new RuntimeException("Cannot initialize DeduplicationCorrelator", e);
+        }
     }
 
     /**
-     * Apply deduplication correlation rule
-     * Criteria: Node (sourceDevice), AlertGroup (eventType), AlertKey (description hash)
-     * Action: Increment tally and update last occurrence timestamp
+     * Correlates an alarm by checking if it's a duplicate.
+     * 
+     * @param alarm The incoming alarm
+     * @return The alarm with updated tally if it's new or first occurrence,
+     *         null if it's a duplicate (already processed)
      */
-    public Alarm deduplicate(Alarm alarm) {
-        String key = generateCorrelationKey(alarm);
-        logger.info("DeduplicationCorrelator: Processing alarm with key: " + key);
-
-        // Attempt to retrieve an existing alarm with the same key
-        Alarm existingAlarm = this.alarmCache.get(key);
-
-        if (existingAlarm != null) {
-            logger.info("DeduplicationCorrelator: Found existing alarm with key: " + key);
-            int oldTally = existingAlarm.getTallyCount();
-
-            // If an alarm with the same key exists, update the tally and last occurrence time
-            existingAlarm.setTallyCount(oldTally + 1);
-            existingAlarm.setLastOccurrence(System.currentTimeMillis());
-            this.alarmCache.put(key, existingAlarm);
-            logger.info("DeduplicationCorrelator: Updated existing alarm: " + key + ". Tally incremented from " + oldTally + " to " + existingAlarm.getTallyCount());
-            return existingAlarm;
-        } else {
-            // If no such alarm exists, create a new one
-            logger.info("DeduplicationCorrelator: No existing alarm found, creating new alarm with key: " + key);
-            alarm.setFirstOccurrence(System.currentTimeMillis());
-            alarm.setLastOccurrence(System.currentTimeMillis());
+    public Alarm correlate(Alarm alarm) {
+        if (alarm == null) {
+            logger.warn("Received null alarm in correlate()");
+            return null;
+        }
+        
+        String alarmId = alarm.getAlarmId();
+        logger.info(">>> DEDUP START: Processing alarm {}", alarmId);
+        logger.debug("Alarm details: severity={}, source={}, description={}", 
+            alarm.getSeverity(), alarm.getDeviceId(), alarm.getDescription());
+        
+        try {
+            // Check if this alarm has been seen before
+            Integer currentTally = localTallyMap.get(alarmId);
+            
+            if (currentTally == null) {
+                // First occurrence of this alarm
+                logger.info(">>> DEDUP: First occurrence of alarm {}", alarmId);
+                alarm.setTallyCount(1);
+                localTallyMap.put(alarmId, 1);
+                
+                // Store in deduplication cache
+                deduplicationCache.put(alarmId, alarm);
+                logger.info(">>> DEDUP RESULT: NEW alarm {} stored with tally=1", alarmId);
+                
+                return alarm; // Return the new alarm to be stored in main cache
+                
+            } else {
+                // This is a duplicate - increment tally
+                int newTally = currentTally + 1;
+                alarm.setTallyCount(newTally);
+                localTallyMap.put(alarmId, newTally);
+                
+                logger.info(">>> DEDUP: Duplicate alarm {} detected, incrementing tally: {} -> {}", 
+                    alarmId, currentTally, newTally);
+                
+                // Update the alarm in deduplication cache
+                deduplicationCache.put(alarmId, alarm);
+                logger.info(">>> DEDUP RESULT: DUPLICATE alarm {} updated with tally={}", alarmId, newTally);
+                
+                // Return the updated alarm so it can be stored in main cache with new tally
+                return alarm;
+            }
+            
+        } catch (Exception e) {
+            logger.error(">>> DEDUP ERROR: Exception while processing alarm {}", alarmId, e);
+            // On error, treat as new alarm to avoid losing it
             alarm.setTallyCount(1);
-            this.alarmCache.put(key, alarm);
             return alarm;
         }
     }
 
     /**
-     * Generate correlation key from Alarm object
+     * Get current tally for an alarm ID
      */
-    private String generateCorrelationKey(Alarm alarm) {
-        return generateCorrelationKey(alarm.getDeviceId(), alarm.getEventType());
+    public int getTally(String alarmId) {
+        Integer tally = localTallyMap.get(alarmId);
+        return tally != null ? tally : 0;
     }
 
     /**
-     * Generate correlation key from Node + AlertGroup + AlertKey
+     * Reset deduplication state (useful for testing)
      */
-    private String generateCorrelationKey(String node, String alertGroup) {
-        return String.format("%s_%s",
-            node != null ? node : "UNKNOWN",
-            alertGroup != null ? alertGroup : "UNKNOWN"
+    public void reset() {
+        logger.info("Resetting deduplication state");
+        localTallyMap.clear();
+        if (deduplicationCache != null) {
+            deduplicationCache.clear();
+        }
+    }
+
+    /**
+     * Get statistics about deduplication
+     */
+    public void logStats() {
+        logger.info("=== Deduplication Statistics ===");
+        logger.info("Unique alarms tracked: {}", localTallyMap.size());
+        localTallyMap.forEach((id, tally) -> 
+            logger.info("  Alarm {}: tally={}", id, tally)
         );
     }
 }

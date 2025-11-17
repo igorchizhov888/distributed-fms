@@ -46,7 +46,7 @@ public class EventConsumer implements Runnable {
     public EventConsumer(Ignite ignite, String bootstrapServers) {
         this.ignite = ignite;
         ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName()).getConfiguration(CacheConfiguration.class).setIndexedTypes(String.class, Alarm.class);
-        this.deduplicationCorrelator = new DeduplicationCorrelator(ignite, FMSIgniteConfig.getAlarmsCacheName());
+        this.deduplicationCorrelator = new DeduplicationCorrelator(ignite);
         this.correlationEngine = new CorrelationEngine(
             ignite,
             FMSIgniteConfig.getAlarmsCacheName(),
@@ -80,43 +80,70 @@ public class EventConsumer implements Runnable {
             while (true) {
                 ConsumerRecords<String, String> records = consumer.poll(Duration.ofMillis(100));
                 for (ConsumerRecord<String, String> record : records) {
-                    String eventJson = record.value();
-                    System.out.println("Received event JSON: " + eventJson);
-                    System.out.println(String.format("Consumed event from partition %d with offset %d: %s",
-                            record.partition(), record.offset(), eventJson));
+                    System.out.println("[DEBUG] Processing record...");
+                    try {
+                        String eventJson = record.value();
+                        System.out.println("Received event JSON: " + eventJson);
+                        System.out.println(String.format("Consumed event from partition %d with offset %d: %s",
+                                record.partition(), record.offset(), eventJson));
 
-                    JsonObject jsonObject = gson.fromJson(eventJson, JsonObject.class);
-                    String deviceId = jsonObject.get("sourceIp").getAsString();
+                        JsonObject jsonObject = gson.fromJson(eventJson, JsonObject.class);
+                        String deviceId = jsonObject.get("sourceIp").getAsString();
 
-                    // Put the event into the Ignite cache
-                    eventsCache.put(deviceId, eventJson);
-                    logger.info("Put event from source '" + deviceId + "' into cache '" + EVENTS_CACHE_NAME + "'");
+                        // Put the event into the Ignite cache
+                        eventsCache.put(deviceId, eventJson);
+                        logger.info("Put event from source '" + deviceId + "' into cache '" + EVENTS_CACHE_NAME + "'");
 
-                    if (!jsonObject.has("eventType")) {
-                        logger.warning("Skipping event with missing 'eventType' field: " + eventJson);
-                        continue;
+                        if (!jsonObject.has("eventType")) {
+                            logger.warning("Skipping event with missing 'eventType' field: " + eventJson);
+                            continue;
+                        }
+
+                        // Create an Alarm from the event
+                        System.out.println("[DEBUG] About to create Alarm object...");
+                        Alarm alarm = new Alarm(
+                                deviceId,
+                                com.distributedFMS.core.model.AlarmSeverity.INFO.name(), // Default severity
+                                jsonObject.get("eventType").getAsString(),
+                                jsonObject.get("description").getAsString(),
+                                "UNKNOWN" // Default region
+                        );
+
+                        // Process the alarm through the deduplication correlator
+                        System.out.println("[DEBUG] About to deduplicate alarm...");
+                        Alarm processedAlarm = deduplicationCorrelator.correlate(alarm);
+                        System.out.println("[DEBUG] After deduplication, alarmId=" + processedAlarm.getAlarmId());
+                        logger.info("Deduplicated alarm: " + processedAlarm.getAlarmId());
+                        
+                        // Store deduplicated alarm immediately so gRPC can see it
+                        try {
+                            IgniteCache<String, Alarm> alarmsCache = ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName());
+                            if (alarmsCache != null) {
+                                alarmsCache.put(processedAlarm.getAlarmId(), processedAlarm);
+                                logger.info("✓ Stored alarm in alarms cache: " + processedAlarm.getAlarmId() + " (tally: " + processedAlarm.getTallyCount() + ")");
+                            } else {
+                                logger.severe("ERROR: alarms cache is NULL!");
+                            }
+                        } catch (Exception cacheEx) {
+                            logger.severe("EXCEPTION storing alarm in cache: " + cacheEx.getMessage());
+                            cacheEx.printStackTrace();
+                        }
+
+                        // Trigger correlation (async, non-blocking)
+                        correlationEngine.correlateAsync(processedAlarm)
+                            .exceptionally(ex -> {
+                                logger.warning("Correlation failed for alarm " + processedAlarm.getAlarmId() + ": " + ex.getMessage());
+                                return null;
+                            });
+                    } catch (Exception recordEx) {
+                        logger.severe("ERROR processing record: " + recordEx.getMessage());
+                        recordEx.printStackTrace();
                     }
-
-                    // Create an Alarm from the event
-                    Alarm alarm = new Alarm(
-                            deviceId,
-                            com.distributedFMS.core.model.AlarmSeverity.INFO.name(), // Default severity
-                            jsonObject.get("eventType").getAsString(),
-                            jsonObject.get("description").getAsString(),
-                            "UNKNOWN" // Default region
-                    );
-
-                    // Process the alarm through the deduplication correlator
-                    Alarm processedAlarm = deduplicationCorrelator.deduplicate(alarm);
-                    
-                    // Trigger correlation (async, non-blocking)
-                    correlationEngine.correlateAsync(processedAlarm)
-                        .exceptionally(ex -> {
-                            logger.warning("Correlation failed for alarm " + processedAlarm.getAlarmId() + ": " + ex.getMessage());
-                            return null;
-                        });
                 }
             }
+        } catch (Exception mainEx) {
+            logger.severe("ERROR in EventConsumer.run(): " + mainEx.getMessage());
+            mainEx.printStackTrace();
         } finally {
             consumer.close();
         }

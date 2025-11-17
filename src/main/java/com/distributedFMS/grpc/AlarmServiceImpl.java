@@ -29,7 +29,16 @@ public class AlarmServiceImpl extends AlarmServiceGrpc.AlarmServiceImplBase {
 
     @Override
     public void queryAlarms(QueryAlarmsRequest request, StreamObserver<AlarmMessage> responseObserver) {
+        System.out.printf("[GRPC] === Query Alarms Request Started ===%n");
         IgniteCache<String, Alarm> cache = ignite.cache(FMSIgniteConfig.getAlarmsCacheName());
+        
+        if (cache == null) {
+            System.err.printf("[GRPC] ERROR: Alarms cache is NULL!%n");
+            responseObserver.onError(new RuntimeException("Alarms cache not available"));
+            return;
+        }
+        
+        System.out.printf("[GRPC] Cache size: %d%n", cache.size());
 
         // Build initial SQL query with filters
         StringBuilder sql = new StringBuilder("SELECT * FROM Alarm");
@@ -52,19 +61,28 @@ public class AlarmServiceImpl extends AlarmServiceGrpc.AlarmServiceImplBase {
         if (!conditions.isEmpty()) {
             sql.append(" WHERE ").append(String.join(" AND ", conditions));
         }
+        
+        System.out.printf("[GRPC] SQL Query: %s%n", sql.toString());
+        System.out.printf("[GRPC] Query args: %s%n", args);
 
         // Send initial snapshot of alarms
         SqlQuery<String, Alarm> initialQuery = new SqlQuery<>(Alarm.class, sql.toString());
         initialQuery.setArgs(args.toArray());
         
+        int alarmCount = 0;
         try (var cursor = cache.query(initialQuery)) {
+            System.out.printf("[GRPC] Executing SQL query...%n");
             for (Cache.Entry<String, Alarm> entry : cursor) {
                 Alarm alarm = entry.getValue();
+                alarmCount++;
+                System.out.printf("[GRPC] Sending alarm #%d: %s - %s%n", alarmCount, alarm.getAlarmId(), alarm.getDescription());
                 AlarmMessage message = toAlarmMessage(alarm);
                 responseObserver.onNext(message);
             }
+            System.out.printf("[GRPC] === Sent %d alarms in initial snapshot ===%n", alarmCount);
         } catch (Exception e) {
             System.err.printf("[GRPC] Error sending initial alarms: %s%n", e.getMessage());
+            e.printStackTrace();
             responseObserver.onError(e);
             return;
         }
