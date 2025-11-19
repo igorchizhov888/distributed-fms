@@ -119,7 +119,7 @@ public class MockGnmiSimulator {
         alarm.addProperty("sourceIp", "10.0.0.1");  // Same source as parent
         alarm.addProperty("community", "public");
         alarm.addProperty("timestamp", System.currentTimeMillis());
-        alarm.addProperty("eventType", "1.3.6.1.6.3.1.1.5.4");  // Different trap type (consequence)
+        alarm.addProperty("eventType", "1.3.6.1.6.3.1.1.5.3");  // Different trap type (consequence)
         alarm.addProperty("description", "[GNMI_5G_CHILD] " + description);
 
         JsonArray vbArray = new JsonArray();
@@ -133,7 +133,7 @@ public class MockGnmiSimulator {
         // OID 2: snmpTrapOID
         JsonObject vb2 = new JsonObject();
         vb2.addProperty("oid", "1.3.6.1.6.3.1.1.4.1.0");
-        vb2.addProperty("value", "1.3.6.1.6.3.1.1.5.4");
+        vb2.addProperty("value", "1.3.6.1.6.3.1.1.5.3");
         vbArray.add(vb2);
 
         // OID 3: description

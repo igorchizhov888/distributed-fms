@@ -2,6 +2,7 @@ package com.distributedFMS.core;
 
 import com.distributedFMS.core.config.FMSIgniteConfig;
 import com.distributedFMS.core.correlation.DeduplicationCorrelator;
+import com.distributedFMS.core.correlation.ClearCorrelator;
 import com.distributedFMS.core.model.Alarm;
 import com.distributedFMS.core.model.AlarmPriority;
 import com.distributedFMS.core.priority.AlarmPrioritizationEngine;
@@ -37,6 +38,7 @@ public class EventConsumer implements Runnable {
     private final Gson gson = new Gson();
     private final DeduplicationCorrelator deduplicationCorrelator;
     private final CorrelationEngine correlationEngine;
+    private final ClearCorrelator clearCorrelator;
     private final CountDownLatch readyLatch = new CountDownLatch(1);
 
     public EventConsumer(Ignite ignite) {
@@ -47,12 +49,13 @@ public class EventConsumer implements Runnable {
         this.ignite = ignite;
         ignite.getOrCreateCache(FMSIgniteConfig.getAlarmsCacheName()).getConfiguration(CacheConfiguration.class).setIndexedTypes(String.class, Alarm.class);
         this.deduplicationCorrelator = new DeduplicationCorrelator(ignite);
+        this.clearCorrelator = new ClearCorrelator(ignite, false);
         this.correlationEngine = new CorrelationEngine(
             ignite,
             FMSIgniteConfig.getAlarmsCacheName(),
             CorrelationConfig.getCorrelatedAlarmsCacheName(),
-            60000,  // 60 second time window
-            100     // Max 100 alarms per correlation
+            60000,
+            100
         );
         logger.info("Correlation engine initialized");
         Properties props = new Properties();
@@ -90,7 +93,6 @@ public class EventConsumer implements Runnable {
                         JsonObject jsonObject = gson.fromJson(eventJson, JsonObject.class);
                         String deviceId = jsonObject.get("sourceIp").getAsString();
 
-                        // Put the event into the Ignite cache
                         eventsCache.put(deviceId, eventJson);
                         logger.info("Put event from source '" + deviceId + "' into cache '" + EVENTS_CACHE_NAME + "'");
 
@@ -99,15 +101,24 @@ public class EventConsumer implements Runnable {
                             continue;
                         }
 
-                        // Create an Alarm from the event
                         System.out.println("[DEBUG] About to create Alarm object...");
                         Alarm alarm = new Alarm(
                                 deviceId,
-                                com.distributedFMS.core.model.AlarmSeverity.INFO.name(), // Default severity
+                                com.distributedFMS.core.model.AlarmSeverity.INFO.name(),
                                 jsonObject.get("eventType").getAsString(),
                                 jsonObject.get("description").getAsString(),
-                                "UNKNOWN" // Default region
+                                "UNKNOWN"
                         );
+
+                        // NEW: Check if this is a clear event BEFORE deduplication
+                        System.out.println("[DEBUG] Checking for clear event...");
+                        boolean isClearEvent = clearCorrelator.processClearEvent(alarm);
+                        
+                        if (isClearEvent) {
+                            System.out.println("[DEBUG] Clear event processed, skipping normal alarm flow");
+                            logger.info("CLEAR EVENT processed: " + alarm.getDescription());
+                            continue; // Don't store clear events as new alarms
+                        }
 
                         // Process the alarm through the deduplication correlator
                         System.out.println("[DEBUG] About to deduplicate alarm...");
