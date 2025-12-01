@@ -2,34 +2,72 @@
 
 This branch contains demo data and screenshots for the GNN topology learning system.
 
+## Screenshots
+
+### Alarm Table with Parent/Child Grouping
+![Alarm Table](screenshots/alarm-table.png)
+
+Shows the real-time alarm monitoring interface with:
+- Parent alarm highlighted (blue background)
+- Expandable child alarms (4 children under 1 parent)
+- 15+ alarm fields displayed
+- Tally count, correlation ID, root cause ID
+- Professional dark theme UI
+
+### Network Topology Visualization
+![Network Topology](screenshots/network-topology.png)
+
+Interactive force-directed graph visualization featuring:
+- 30 nodes color-coded by device type
+- 870 edges at 0.30 confidence threshold
+- Real-time confidence slider
+- Node labels with device names
+- Training controls and statistics
+- Zoom, pan, and click interactions
+
 ## Quick Demo
 
-1. Start all services:
+### 1. Start All Services
 ```bash
+# Start Docker services
+cd ~/Gemini_CLI/distributed-fms
 docker compose up -d
-cd topology-service && source topology_env/bin/activate && python topology_grpc_server.py &
-cd ui/fms-ui && npm start
+sleep 30
+
+# Start Python topology service (Terminal 1)
+cd topology-service
+source topology_env/bin/activate
+python topology_grpc_server.py
+
+# Start React UI (Terminal 2)
+cd ui/fms-ui
+docker compose stop fms-ui
+npm start
 ```
 
-2. Generate alarms:
+### 2. Generate Alarms
 ```bash
 docker compose restart gnmi-simulator
 ```
 
-3. Open browser: http://localhost:3000
-   - View alarms in "Alarms" tab
-   - Click "Network Topology" → "Train Model"
-   - Adjust confidence slider to see different edge densities
+### 3. View System
 
-## Screenshots
+Open http://localhost:3000
 
-See `docs/screenshots/` for:
-- Alarm table with parent/child grouping
-- Topology with 870 edges (low confidence)
-- Topology with 0 edges (high confidence)
-- Training controls and statistics
+- **Alarms Tab**: View real-time table, expand parent alarms
+- **Network Topology Tab**: Click "Train Model", adjust confidence slider
 
-## Sample Data
+## Device Type Colors
+- 🔴 Red: Core Routers
+- 🔵 Blue: Switches  
+- 🟢 Green: Routers
+- 🟠 Orange: Hosts
+- ⚫ Gray: Unknown
 
-- `topology-service/synthetic_alarms.json` - Generated alarm data
-- `topology-service/learned_topology.json` - Pre-trained topology
+## Stopping the System
+```bash
+# Ctrl+C in Python/React terminals
+docker compose down
+```
+
+For complete documentation, see the `main` branch.
