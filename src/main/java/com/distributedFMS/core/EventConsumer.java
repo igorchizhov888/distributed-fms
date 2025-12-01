@@ -104,7 +104,7 @@ public class EventConsumer implements Runnable {
                         System.out.println("[DEBUG] About to create Alarm object...");
                         Alarm alarm = new Alarm(
                                 deviceId,
-                                com.distributedFMS.core.model.AlarmSeverity.INFO.name(),
+                                com.distributedFMS.core.model.AlarmSeverity.MAJOR.name(),
                                 jsonObject.get("eventType").getAsString(),
                                 jsonObject.get("description").getAsString(),
                                 "UNKNOWN"
