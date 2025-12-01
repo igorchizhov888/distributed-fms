@@ -1,0 +1,47 @@
+I would like to add to FMS the following feature that works using AI/ML.
+Network Topology Learning
+Use graph neural networks (GNNs) to learn the logical topology from trap patterns and correlation history. The system could automatically infer which devices talk to which and improve correlation rules by understanding "alarms from device A always trigger alarms in device B." This beats manual topology configuration.
+Network Topology learning
+I've created a  guide on Network Topology Learning with GNNs for your FMS. Let me also create a practical starter template you can use immediately. You can follow this plan, or you can enhance it with improvements.  Here's what you now have (3 attachments will be posted as separate files wait for them before you respond):
+Summary
+3 Files Created:
+1.	gnn_topology_guide.md - Complete 880-line technical guide covering:
+o	Detailed architecture & system design
+o	GNN model specifications (Graph Attention Networks)
+o	Feature engineering from alarms
+o	Synthetic alarm generation for testing
+o	Python-Java/Ignite integration strategies
+o	6-week implementation timeline
+o	Validation metrics
+2.	topology_learner.py - Production-ready Python code (~700 lines) with:
+o	Synthetic network generator (realistic telecom topology)
+o	Synthetic alarm generator (causal fault propagation)
+o	Graph feature extraction from alarm history
+o	PyTorch Geometric GNN model (GAT - Graph Attention Networks)
+o	Training pipeline with temporal validation splitting
+o	FastAPI service for Ignite integration
+o	CLI modes: simulate, train, server
+3.	TOPOLOGY_QUICKSTART.md - Get running:
+o	Installation steps
+o	Quick test commands
+o	Example output showing learned topology
+o	Docker integration guide
+o	Java code to call Python service
+o	Performance benchmarks
+Can it work with Java/Ignite?
+•	Yes. Python runs as a separate microservice, communicates with Ignite via REST or gRPC. No breaking changes to existing code. Select best approach gRPC or REST. I am inclined to choose gRPC. 
+How to test without real network data?
+•	Built-in synthetic alarm generator creates realistic fault propagation patterns (core failures cascade to edges, etc.)
+Python ↔ Java/Ignite Integration?
+•	Two approaches: REST API (simpler) or gRPC (faster). Java code shown to make HTTP calls.
+Quick Test
+# Install: pip install torch torch-geometric networkx fastapi uvicorn
+# Generate 10K alarms: python topology_learner.py --mode simulate
+# Train GNN: python topology_learner.py --mode train --epochs 50
+# Check output: cat learned_topology.json
+The model will automatically:
+•	Infer device roles (core vs edge vs host)
+•	Learn topology edges from alarm co-occurrence
+•	Calculate causality weights (which alarms cause which)
+•	Output confidence scores for each connection
+This is a starting point you can extend with real alarm data when ready.

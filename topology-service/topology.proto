@@ -1,0 +1,77 @@
+syntax = "proto3";
+
+package topology;
+
+// Topology Learning Service
+service TopologyService {
+  // Train the GNN model from alarm history
+  rpc TrainTopology(TrainRequest) returns (TrainResponse);
+  
+  // Get the current learned topology
+  rpc GetTopology(GetTopologyRequest) returns (GetTopologyResponse);
+  
+  // Predict if two devices are connected
+  rpc PredictConnection(ConnectionRequest) returns (ConnectionResponse);
+  
+  // Stream real-time topology updates
+  rpc StreamTopologyUpdates(StreamRequest) returns (stream TopologyUpdate);
+}
+
+message TrainRequest {
+  int32 alarm_history_hours = 1;
+  int32 num_epochs = 2;
+}
+
+message TrainResponse {
+  bool success = 1;
+  string message = 2;
+  int32 num_nodes = 3;
+  int32 num_edges = 4;
+  double training_loss = 5;
+}
+
+message GetTopologyRequest {
+  double min_confidence = 1;  // Filter edges below this confidence
+}
+
+message GetTopologyResponse {
+  repeated Node nodes = 1;
+  repeated Edge edges = 2;
+  string timestamp = 3;
+}
+
+message Node {
+  string device_id = 1;
+  string device_type = 2;
+  repeated double embedding = 3;
+}
+
+message Edge {
+  string source = 1;
+  string destination = 2;
+  double confidence = 3;
+  double causality_weight = 4;
+  int32 co_occurrence_count = 5;
+}
+
+message ConnectionRequest {
+  string device_a = 1;
+  string device_b = 2;
+}
+
+message ConnectionResponse {
+  bool connected = 1;
+  double confidence = 2;
+  double causality_weight = 3;
+}
+
+message StreamRequest {
+  int32 update_interval_seconds = 1;
+}
+
+message TopologyUpdate {
+  string timestamp = 1;
+  repeated Edge new_edges = 2;
+  repeated Edge updated_edges = 3;
+  repeated string removed_edges = 4;
+}

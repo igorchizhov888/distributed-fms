@@ -34,3 +34,25 @@ dependency-reduced-pom.xml
 
 # Ignite
 ignite/
+# Python virtual environment
+topology-service/topology_env/
+topology-service/__pycache__/
+topology-service/*.pyc
+
+# Node modules
+ui/fms-ui/node_modules/
+
+# Environment variables (contains secrets)
+.env
+
+# Build artifacts
+target/
+*.class
+classpath.txt
+
+# IDE files
+.vscode/
+.idea/
+
+# Archive/backup files
+archive/

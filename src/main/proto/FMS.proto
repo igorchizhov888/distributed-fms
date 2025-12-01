@@ -55,3 +55,106 @@ message QueryAlarmsRequest {
   // Optional: Filter by event type.
   optional string event_type = 3;
 }
+
+// ============================================================================
+// TOPOLOGY LEARNING SERVICE (GNN-based)
+// ============================================================================
+
+// The Topology Learning service definition.
+service TopologyService {
+  // Train the GNN model from alarm history
+  rpc TrainTopology(TrainTopologyRequest) returns (TrainTopologyResponse) {}
+  
+  // Train with real alarms from Ignite (NEW)
+  rpc TrainTopologyWithAlarms(TrainTopologyRequestWithAlarms) returns (TrainTopologyResponse) {}
+  
+  // Get the current learned topology
+  rpc GetTopology(GetTopologyRequest) returns (GetTopologyResponse) {}
+  
+  // Predict if two devices are connected
+  rpc PredictConnection(PredictConnectionRequest) returns (PredictConnectionResponse) {}
+  
+  // Get predicted edges for a specific device
+  rpc GetDeviceConnections(GetDeviceConnectionsRequest) returns (GetDeviceConnectionsResponse) {}
+}
+
+message TrainTopologyRequest {
+  int32 alarm_history_hours = 1;  // How many hours of alarm history to use
+  int32 num_epochs = 2;            // Number of training epochs
+}
+
+message TrainTopologyResponse {
+  bool success = 1;
+  string message = 2;
+  int32 num_nodes = 3;
+  int32 num_edges = 4;
+  double training_loss = 5;
+  string training_timestamp = 6;
+}
+
+message GetTopologyRequest {
+  double min_confidence = 1;  // Filter edges below this confidence (0.0-1.0)
+}
+
+message GetTopologyResponse {
+  repeated TopologyNode nodes = 1;
+  repeated TopologyEdge edges = 2;
+  string topology_timestamp = 3;
+  int32 total_nodes = 4;
+  int32 total_edges = 5;
+}
+
+message TopologyNode {
+  string device_id = 1;
+  string device_type = 2;           // e.g., "core_router", "edge_router", "host"
+  repeated float embedding = 3 [packed=false];     // 128-dimensional node embedding from GNN
+}
+
+message TopologyEdge {
+  string source_device = 1;
+  string destination_device = 2;
+  double confidence = 3;             // 0.0-1.0: How confident the model is
+  double causality_weight = 4;       // 0.0-1.0: Alarm causality strength
+  int32 co_occurrence_count = 5;     // How many times alarms co-occurred
+  string last_observed = 6;          // Timestamp of last co-occurrence
+}
+
+message PredictConnectionRequest {
+  string device_a = 1;
+  string device_b = 2;
+}
+
+message PredictConnectionResponse {
+  bool connected = 1;
+  double confidence = 2;
+  double causality_weight = 3;
+  string explanation = 4;  // Human-readable explanation
+}
+
+message GetDeviceConnectionsRequest {
+  string device_id = 1;
+  double min_confidence = 2;
+}
+
+message GetDeviceConnectionsResponse {
+  repeated TopologyEdge edges = 1;
+  int32 total_connections = 2;
+}
+
+// ============================================================================
+// ALARM DATA FOR TOPOLOGY TRAINING
+// ============================================================================
+
+message AlarmData {
+  string device_id = 1;
+  int64 timestamp = 2;
+  string severity = 3;
+  string event_type = 4;
+  string description = 5;
+}
+
+message TrainTopologyRequestWithAlarms {
+  repeated AlarmData alarms = 1;
+  repeated string device_ids = 2;
+  int32 num_epochs = 3;
+}
