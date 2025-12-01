@@ -98,3 +98,36 @@ table td {
 .parent-alarm td:nth-child(9) {
   font-weight: bold;
 }
+
+/* Tab Navigation - Added for Topology View */
+.tab-navigation {
+  display: flex;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.tab-active, .tab-inactive {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 5px 5px 0 0;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.tab-active {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  transform: translateY(2px);
+}
+
+.tab-inactive {
+  background: #2d3748;
+  color: #aaa;
+}
+
+.tab-inactive:hover {
+  background: #4a5568;
+  color: white;
+}

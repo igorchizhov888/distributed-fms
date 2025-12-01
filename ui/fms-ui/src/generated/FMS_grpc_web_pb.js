@@ -244,5 +244,362 @@ proto.com.distributedFMS.AlarmServicePromiseClient.prototype.queryAlarms =
 };
 
 
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.com.distributedFMS.TopologyServiceClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @param {string} hostname
+ * @param {?Object} credentials
+ * @param {?grpc.web.ClientOptions} options
+ * @constructor
+ * @struct
+ * @final
+ */
+proto.com.distributedFMS.TopologyServicePromiseClient =
+    function(hostname, credentials, options) {
+  if (!options) options = {};
+  options.format = 'text';
+
+  /**
+   * @private @const {!grpc.web.GrpcWebClientBase} The client
+   */
+  this.client_ = new grpc.web.GrpcWebClientBase(options);
+
+  /**
+   * @private @const {string} The hostname
+   */
+  this.hostname_ = hostname.replace(/\/+$/, '');
+
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.distributedFMS.TrainTopologyRequest,
+ *   !proto.com.distributedFMS.TrainTopologyResponse>}
+ */
+const methodDescriptor_TopologyService_TrainTopology = new grpc.web.MethodDescriptor(
+  '/com.distributedFMS.TopologyService/TrainTopology',
+  grpc.web.MethodType.UNARY,
+  proto.com.distributedFMS.TrainTopologyRequest,
+  proto.com.distributedFMS.TrainTopologyResponse,
+  /**
+   * @param {!proto.com.distributedFMS.TrainTopologyRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.distributedFMS.TrainTopologyResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.distributedFMS.TrainTopologyRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.com.distributedFMS.TrainTopologyResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.TrainTopologyResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.distributedFMS.TopologyServiceClient.prototype.trainTopology =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/TrainTopology',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_TrainTopology,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.distributedFMS.TrainTopologyRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.distributedFMS.TrainTopologyResponse>}
+ *     Promise that resolves to the response
+ */
+proto.com.distributedFMS.TopologyServicePromiseClient.prototype.trainTopology =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/TrainTopology',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_TrainTopology);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.distributedFMS.TrainTopologyRequestWithAlarms,
+ *   !proto.com.distributedFMS.TrainTopologyResponse>}
+ */
+const methodDescriptor_TopologyService_TrainTopologyWithAlarms = new grpc.web.MethodDescriptor(
+  '/com.distributedFMS.TopologyService/TrainTopologyWithAlarms',
+  grpc.web.MethodType.UNARY,
+  proto.com.distributedFMS.TrainTopologyRequestWithAlarms,
+  proto.com.distributedFMS.TrainTopologyResponse,
+  /**
+   * @param {!proto.com.distributedFMS.TrainTopologyRequestWithAlarms} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.distributedFMS.TrainTopologyResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.distributedFMS.TrainTopologyRequestWithAlarms} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.com.distributedFMS.TrainTopologyResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.TrainTopologyResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.distributedFMS.TopologyServiceClient.prototype.trainTopologyWithAlarms =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/TrainTopologyWithAlarms',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_TrainTopologyWithAlarms,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.distributedFMS.TrainTopologyRequestWithAlarms} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.distributedFMS.TrainTopologyResponse>}
+ *     Promise that resolves to the response
+ */
+proto.com.distributedFMS.TopologyServicePromiseClient.prototype.trainTopologyWithAlarms =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/TrainTopologyWithAlarms',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_TrainTopologyWithAlarms);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.distributedFMS.GetTopologyRequest,
+ *   !proto.com.distributedFMS.GetTopologyResponse>}
+ */
+const methodDescriptor_TopologyService_GetTopology = new grpc.web.MethodDescriptor(
+  '/com.distributedFMS.TopologyService/GetTopology',
+  grpc.web.MethodType.UNARY,
+  proto.com.distributedFMS.GetTopologyRequest,
+  proto.com.distributedFMS.GetTopologyResponse,
+  /**
+   * @param {!proto.com.distributedFMS.GetTopologyRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.distributedFMS.GetTopologyResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.distributedFMS.GetTopologyRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.com.distributedFMS.GetTopologyResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.GetTopologyResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.distributedFMS.TopologyServiceClient.prototype.getTopology =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/GetTopology',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_GetTopology,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.distributedFMS.GetTopologyRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.distributedFMS.GetTopologyResponse>}
+ *     Promise that resolves to the response
+ */
+proto.com.distributedFMS.TopologyServicePromiseClient.prototype.getTopology =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/GetTopology',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_GetTopology);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.distributedFMS.PredictConnectionRequest,
+ *   !proto.com.distributedFMS.PredictConnectionResponse>}
+ */
+const methodDescriptor_TopologyService_PredictConnection = new grpc.web.MethodDescriptor(
+  '/com.distributedFMS.TopologyService/PredictConnection',
+  grpc.web.MethodType.UNARY,
+  proto.com.distributedFMS.PredictConnectionRequest,
+  proto.com.distributedFMS.PredictConnectionResponse,
+  /**
+   * @param {!proto.com.distributedFMS.PredictConnectionRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.distributedFMS.PredictConnectionResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.distributedFMS.PredictConnectionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.com.distributedFMS.PredictConnectionResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.PredictConnectionResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.distributedFMS.TopologyServiceClient.prototype.predictConnection =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/PredictConnection',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_PredictConnection,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.distributedFMS.PredictConnectionRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.distributedFMS.PredictConnectionResponse>}
+ *     Promise that resolves to the response
+ */
+proto.com.distributedFMS.TopologyServicePromiseClient.prototype.predictConnection =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/PredictConnection',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_PredictConnection);
+};
+
+
+/**
+ * @const
+ * @type {!grpc.web.MethodDescriptor<
+ *   !proto.com.distributedFMS.GetDeviceConnectionsRequest,
+ *   !proto.com.distributedFMS.GetDeviceConnectionsResponse>}
+ */
+const methodDescriptor_TopologyService_GetDeviceConnections = new grpc.web.MethodDescriptor(
+  '/com.distributedFMS.TopologyService/GetDeviceConnections',
+  grpc.web.MethodType.UNARY,
+  proto.com.distributedFMS.GetDeviceConnectionsRequest,
+  proto.com.distributedFMS.GetDeviceConnectionsResponse,
+  /**
+   * @param {!proto.com.distributedFMS.GetDeviceConnectionsRequest} request
+   * @return {!Uint8Array}
+   */
+  function(request) {
+    return request.serializeBinary();
+  },
+  proto.com.distributedFMS.GetDeviceConnectionsResponse.deserializeBinary
+);
+
+
+/**
+ * @param {!proto.com.distributedFMS.GetDeviceConnectionsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>} metadata User defined
+ *     call metadata
+ * @param {function(?grpc.web.RpcError, ?proto.com.distributedFMS.GetDeviceConnectionsResponse)}
+ *     callback The callback function(error, response)
+ * @return {!grpc.web.ClientReadableStream<!proto.com.distributedFMS.GetDeviceConnectionsResponse>|undefined}
+ *     The XHR Node Readable Stream
+ */
+proto.com.distributedFMS.TopologyServiceClient.prototype.getDeviceConnections =
+    function(request, metadata, callback) {
+  return this.client_.rpcCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/GetDeviceConnections',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_GetDeviceConnections,
+      callback);
+};
+
+
+/**
+ * @param {!proto.com.distributedFMS.GetDeviceConnectionsRequest} request The
+ *     request proto
+ * @param {?Object<string, string>=} metadata User defined
+ *     call metadata
+ * @return {!Promise<!proto.com.distributedFMS.GetDeviceConnectionsResponse>}
+ *     Promise that resolves to the response
+ */
+proto.com.distributedFMS.TopologyServicePromiseClient.prototype.getDeviceConnections =
+    function(request, metadata) {
+  return this.client_.unaryCall(this.hostname_ +
+      '/com.distributedFMS.TopologyService/GetDeviceConnections',
+      request,
+      metadata || {},
+      methodDescriptor_TopologyService_GetDeviceConnections);
+};
+
+
 module.exports = proto.com.distributedFMS;
 
